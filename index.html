@@ -136,16 +136,18 @@ let fav=new Set();try{fav=new Set(JSON.parse(ls.get("fav")||"[]"))}catch(e){}
 const PAGE=60;let cat=-1,shown=PAGE,view="dict";
 const hl=(t,q)=>{if(!q)return esc(t);const i=t.toLowerCase().indexOf(q);return i<0?esc(t):esc(t.slice(0,i))+"<mark>"+esc(t.slice(i,i+q.length))+"</mark>"+esc(t.slice(i+q.length))};
 const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2200)};
+function voiceFor(l){
+ const v=speechSynthesis.getVoices().filter(x=>x.lang.replace("_","-").toLowerCase()===l.toLowerCase());
+ const pref=l==="en-GB"?/daniel|serena|kate|oliver/i:/samantha|ava|allison|nicky/i;
+ return v.find(x=>/google/i.test(x.name))||v.find(x=>/premium|enhanced|neural|natural/i.test(x.name))||v.find(x=>pref.test(x.name))||v[0]}
 function say(t,l){
  if(!("speechSynthesis" in window))return toast("Speech is not supported here");
- const v=speechSynthesis.getVoices();
- if(l==="hy-AM"&&v.length&&!v.some(x=>x.lang.toLowerCase().startsWith("hy")))return toast("No Armenian voice on this device");
- speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=l;u.rate=.9;speechSynthesis.speak(u)}
-const acts=w=>`<button data-say="${w.id}" data-l="en-US" aria-label="Listen in English">🔊EN</button><button data-say="${w.id}" data-l="hy-AM" aria-label="Listen in Armenian">🔊ՀՅ</button><button class="heart ${fav.has(w.id)?"on":""}" data-fav="${w.id}" aria-label="Save">♥</button>`;
+ speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t),v=voiceFor(l);u.lang=l;if(v)u.voice=v;u.rate=.9;speechSynthesis.speak(u)}
+const acts=w=>`<button data-say="${w.id}" data-l="en-US" aria-label="Listen, American accent">🔊 US</button><button data-say="${w.id}" data-l="en-GB" aria-label="Listen, British accent">🔊 UK</button><button class="heart ${fav.has(w.id)?"on":""}" data-fav="${w.id}" aria-label="Save">♥</button>`;
 const card=(w,q,i)=>`<li class="card" style="animation-delay:${Math.min(i%PAGE*25,350)}ms"><div class="row"><div><div class="en">${hl(w.en,q)}</div><div class="hy">${hl(w.hy,q)}</div></div><div class="acts">${acts(w)}</div></div><div class="cat">${esc(CATS[w.c][0])}</div></li>`;
 document.addEventListener("click",e=>{
  const s=e.target.closest("[data-say]");
- if(s){const w=WORDS[+s.dataset.say];say(s.dataset.l==="en-US"?w.en:w.hy,s.dataset.l);return}
+ if(s){const w=WORDS[+s.dataset.say];say(w.en,s.dataset.l);return}
  const f=e.target.closest("[data-fav]");
  if(f){const id=+f.dataset.fav;fav.has(id)?fav.delete(id):fav.add(id);ls.set("fav",JSON.stringify([...fav]));
   $$(`[data-fav="${id}"]`).forEach(b=>b.classList.toggle("on",fav.has(id)));
