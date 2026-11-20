@@ -1,8 +1,13 @@
 <!DOCTYPE html>
-<html lang="hy">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="English–Armenian medical dictionary with phrasebook, word parts, abbreviations and a spaced-repetition trainer.">
+<meta name="theme-color" content="#0d9488">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>English–Հայերեն Medical Dictionary</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Armenian:wght@400;600;800&family=Inter:wght@400;500;600;700&display=swap">
 <style>
@@ -104,6 +109,32 @@ mark{background:var(--mark);color:inherit;border-radius:4px;padding:0 2px}
 @keyframes rise{from{opacity:0;translate:0 18px}to{opacity:1;translate:0 0}}
 footer{text-align:center;margin-top:34px;color:var(--muted);font-size:12px;line-height:1.5}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition:none!important}}
+/* --- additions --- */
+header{position:relative;padding-top:26px}
+#theme{position:absolute;top:-8px;right:0;width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:16px;line-height:1;box-shadow:var(--shadow)}
+#tabs button{font-size:13px;padding:10px 2px}
+.hyv{display:none!important}body.hasHy .hyv{display:inline-block!important}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 8px}
+.tools button,.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:9px 14px;border-radius:999px;font-size:13px;font-family:inherit;cursor:pointer;transition:.2s}
+.tools button:hover,.btn:hover{border-color:var(--accent)}
+#lcat{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;font-family:inherit;margin-bottom:12px}
+.lst{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:var(--muted)}
+.lst b{color:var(--text)}.lst .r{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.bar{height:8px;border-radius:99px;background:var(--border);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s}
+.typein{width:100%;padding:16px;font-size:20px;border-radius:14px;border:2px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;outline:none;margin-top:14px}
+.typein:focus{border-color:var(--accent)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.two .opt{font-size:16px;padding:14px}
+.play{display:block;margin:0 auto;border:0;background:rgba(255,255,255,.22);color:#fff;border-radius:999px;padding:14px 26px;font-size:20px;font-family:inherit;cursor:pointer;margin-top:10px}
+.fb{margin-top:12px;text-align:center;font-size:15px;min-height:22px}
+.grid.wide{grid-template-columns:1fr}
+.abbr{font-size:22px;font-weight:800;color:var(--accent);overflow-wrap:anywhere}
+.ex{font-size:13px;color:var(--muted);margin-top:8px;overflow-wrap:anywhere}
+.note{margin:12px 2px 0;padding:10px 14px;border-radius:14px;border:1px dashed var(--accent);color:var(--muted);font-size:13px}
+button:focus-visible,input:focus-visible,select:focus-visible,.z:focus-visible,.flip:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+.z:focus-visible{outline:none;stroke-width:3.5}
+@media (max-width:380px){.two{grid-template-columns:1fr}}
 </style>
 </head>
 <body class="lock">
@@ -114,63 +145,422 @@ footer{text-align:center;margin-top:34px;color:var(--muted);font-size:12px;line-
 <div class="num"><b id="n">0</b>words and phrases</div><div class="skip">Tap to skip</div></div></div>
 <div class="blob b1"></div><div class="blob b2"></div>
 <main id="main">
-<header><h1>Բժշկական բառարան</h1><p class="sub">English–Armenian medical dictionary</p></header>
-<nav id="tabs"><button data-v="dict" class="on">Dictionary</button><button data-v="body">Body</button><button data-v="learn">Learn</button><button data-v="saved">Saved ♥</button></nav>
+<header><button id="theme" type="button" aria-label="Switch light/dark theme">🌙</button><h1 lang="hy">Բժշկական բառարան</h1><p class="sub">English–Armenian medical dictionary</p></header>
+<nav id="tabs" role="tablist"><button role="tab" data-v="dict" class="on" aria-selected="true">Dictionary</button><button role="tab" data-v="body" aria-selected="false">Body</button><button role="tab" data-v="learn" aria-selected="false">Learn</button><button role="tab" data-v="ref" aria-selected="false">Phrases</button><button role="tab" data-v="saved" aria-selected="false">♥ Saved</button></nav>
 <section class="view" id="v-dict">
 <div class="search"><input id="q" type="search" placeholder="Search: heart, fever, գլուխ…" autocomplete="off"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></div>
 <div class="chips" id="chips"></div><div class="wod" id="wod"></div><div class="count" id="count"></div>
 <ul class="grid" id="list"></ul><button class="more" id="more" hidden>Show more</button></section>
 <section class="view" id="v-body" hidden><div class="bodywrap"><svg id="body" viewBox="0 0 200 440"></svg><div><h3 id="bodyhd">Tap a body part</h3><ul class="grid" id="bodylist"></ul></div></div></section>
-<section class="view" id="v-learn" hidden><div class="seg" id="lmode"><button data-m="quiz" class="on">Quiz</button><button data-m="cards">Flashcards</button><button id="dirb">EN → ՀՅ</button></div><div id="learn"></div></section>
-<section class="view" id="v-saved" hidden><ul class="grid" id="savedlist"></ul></section>
+<section class="view" id="v-learn" hidden><div class="seg" id="lmode"><button data-m="quiz" class="on">Quiz</button><button data-m="cards">Cards</button><button data-m="listen">Listen</button><button data-m="type">Type</button><button id="dirb">EN → ՀՅ</button></div>
+<select id="lcat" aria-label="Choose what to practise"></select><div class="lst" id="lstats"></div><div id="learn"></div></section>
+<section class="view" id="v-ref" hidden>
+<div class="seg" id="rmode"><button data-r="ph" class="on">Phrases</button><button data-r="wp">Word parts</button><button data-r="ab">Abbreviations</button></div>
+<div class="search"><input id="rq" type="search" placeholder="Search phrases…" autocomplete="off"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></div>
+<div class="chips" id="rchips"></div><div class="count" id="rcount"></div>
+<ul class="grid wide" id="rlist"></ul><div class="note" id="rnote" hidden></div></section>
+<section class="view" id="v-saved" hidden>
+<div class="tools"><button id="exAnki" type="button">⬇ Saved for Anki</button><button id="exJson" type="button">⬇ Backup</button><button id="imJson" type="button">⬆ Restore</button><button id="exAll" type="button">⬇ All words (.txt)</button></div>
+<input type="file" id="imFile" accept=".json,application/json" hidden>
+<ul class="grid" id="savedlist"></ul></section>
 <footer>A study dictionary, not a source of medical advice.<br>Some terms may have other professional equivalents.</footer>
 </main>
 <div id="toast"></div>
 <script>
-const DATA={"cats":[["Body parts","Մարմնի մասեր"],["Organs and body systems","Օրգաններ և մարմնի համակարգեր"],["Common illnesses and conditions","Հաճախ հանդիպող հիվանդություններ"],["Symptoms and complaints","Ախտանիշներ և գանգատներ"],["Medicines and treatment","Դեղեր և բուժում"],["Medical people and places","Բժշկական մասնագետներ և վայրեր"],["Health, hygiene and lifestyle","Առողջություն, հիգիենա և ապրելակերպ"],["Medical tools and equipment","Բժշկական գործիքներ և սարքավորումներ"],["First aid and emergencies","Առաջին օգնություն և արտակարգ իրավիճակներ"],["General medical words","Ընդհանուր բժշկական բառապաշար"]],"words":[["body","մարմին",0],["head","գլուխ",0],["face","դեմք",0],["neck","պարանոց",0],["shoulder","ուս",0],["arm","բազուկ",0],["elbow","արմունկ",0],["forearm","նախաբազուկ",0],["wrist","դաստակ",0],["hand","ձեռք",0],["palm","ափ",0],["finger","մատ",0],["thumb","բութ մատ",0],["index finger","ցուցամատ",0],["middle finger","միջնամատ",0],["ring finger","մատնեմատ",0],["little finger","ճկույթ",0],["fingernail","եղունգ",0],["chest","կրծքավանդակ",0],["back","մեջք",0],["waist","գոտկատեղ",0],["abdomen","որովայն",0],["hip","կոնք",0],["buttock","հետույք",0],["leg","ոտք",0],["thigh","ազդր",0],["knee","ծունկ",0],["kneecap","ծնկոսկր",0],["shin","սրունք",0],["calf","սրունքի մկան",0],["ankle","կոճ",0],["foot","ոտնաթաթ",0],["heel","գարշապար",0],["toe","ոտքի մատ",0],["big toe","ոտքի բութ մատ",0],["sole","ներբան",0],["skin","մաշկ",0],["hair","մազ",0],["scalp","գլխամաշկ",0],["forehead","ճակատ",0],["temple","քունք",0],["cheek","այտ",0],["chin","կզակ",0],["jaw","ծնոտ",0],["ear","ականջ",0],["earlobe","ականջի բլթակ",0],["eye","աչք",0],["eyebrow","հոնք",0],["eyelash","թարթիչ",0],["eyelid","կոպ",0],["nose","քիթ",0],["nostril","քթանցք",0],["mouth","բերան",0],["lip","շրթունք",0],["tooth","ատամ",0],["gum","լնդ",0],["tongue","լեզու",0],["throat","կոկորդ",0],["voice","ձայն",0],["breast","կուրծք",0],["nipple","պտուկ",0],["navel","պորտ",0],["spine","ողնաշար",0],["rib","կող",0],["pelvis","կոնքավազան",0],["tailbone","պոչուկ",0],["joint","հոդ",0],["muscle","մկան",0],["tendon","ջիլ",0],["ligament","կապան",0],["bone","ոսկոր",0],["skull","գանգ",0],["brain","ուղեղ",0],["nerve","նյարդ",0],["blood vessel","արյունատար անոթ",0],["artery","զարկերակ",0],["vein","երակ",0],["capillary","մազանոթ",0],["body hair","մարմնի մազածածկույթ",0],["eyeball","ակնագունդ",0],["cheekbone","այտոսկր",0],["collarbone","անրակ",0],["upper arm","բազկի վերին հատված",0],["lower leg","ոտքի ստորին հատված",0],["body shape","մարմնի կառուցվածք",0],["body part","մարմնի մաս",0],["armpit","թևատակ",0],["groin","աճուկ",0],["nape","ծոծրակ",0],["top of the head","գլխի գագաթ",0],["eye socket","ակնակապիճ",0],["bridge of the nose","քթի կամուրջ",0],["moustache","բեղ",0],["beard","մորուք",0],["palate","քիմք",0],["uvula","լեզվակ",0],["incisor","կտրիչ ատամ",0],["canine tooth","ժանիք",0],["molar","աղորիք ատամ",0],["wisdom tooth","իմաստության ատամ",0],["baby tooth","կաթնատամ",0],["permanent tooth","մշտական ատամ",0],["tooth root","ատամի արմատ",0],["tooth crown","ատամի պսակ",0],["enamel","ատամի էմալ",0],["knuckle","մատի հոդ",0],["fist","բռունցք",0],["fingertip","մատի ծայր",0],["arch of the foot","ոտնաթաթի կամար",0],["vertebra","ողն",0],["cervical spine","պարանոցային ողնաշար",0],["thoracic spine","կրծքային ողնաշար",0],["lumbar spine","գոտկային ողնաշար",0],["sacrum","սրբոսկր",0],["sternum","կրծոսկր",0],["shoulder blade","թիակ",0],["humerus","բազկոսկր",0],["radius","ճաճանչոսկր",0],["ulna","արմնկոսկր",0],["femur","ազդրոսկր",0],["tibia","մեծ սրունքոսկր",0],["fibula","փոքր սրունքոսկր",0],["skeleton","կմախք",0],["rib cage","կողերի վանդակ",0],["jawbone","ծնոտոսկր",0],["upper jaw","վերին ծնոտ",0],["lower jaw","ստորին ծնոտ",0],["shoulder joint","ուսի հոդ",0],["knee joint","ծնկի հոդ",0],["hip joint","կոնքի հոդ",0],["biceps","երկգլուխ մկան",0],["triceps","եռագլուխ մկան",0],["abdominal muscle","որովայնի մկան",0],["chest muscle","կրծքի մկան",0],["back muscle","մեջքի մկան",0],["Achilles tendon","Աքիլեսյան ջիլ",0],["mole (on the skin)","խալ",0],["wrinkle","կնճիռ",0],["fingerprint","մատնահետք",0],["limb","վերջույթ",0],["upper limb","վերին վերջույթ",0],["lower limb","ստորին վերջույթ",0],["trunk","իրան",0],["upper lip","վերին շուրթ",0],["lower lip","ստորին շուրթ",0],["upper back","մեջքի վերին հատված",0],["lower back","մեջքի ստորին հատված",0],["heart","սիրտ",1],["lung","թոք",1],["liver","լյարդ",1],["kidney","երիկամ",1],["stomach","ստամոքս",1],["intestine","աղիք",1],["small intestine","բարակ աղիք",1],["large intestine","հաստ աղիք",1],["appendix","որդանման ելուն",1],["pancreas","ենթաստամոքսային գեղձ",1],["spleen","փայծաղ",1],["gallbladder","լեղապարկ",1],["bladder","միզապարկ",1],["esophagus","կերակրափող",1],["windpipe","շնչափող",1],["diaphragm","ստոծանի",1],["thyroid gland","վահանաձև գեղձ",1],["salivary gland","թքագեղձ",1],["pituitary gland","հիպոֆիզ",1],["adrenal gland","մակերիկամ",1],["tonsil","նշագեղձ",1],["lymph node","ավշային հանգույց",1],["lymph","ավիշ",1],["blood","արյուն",1],["plasma","արյան պլազմա",1],["red blood cell","կարմիր արյան բջիջ",1],["white blood cell","սպիտակ արյան բջիջ",1],["platelet","թրոմբոցիտ",1],["bone marrow","ոսկրածուծ",1],["cartilage","աճառ",1],["urinary system","միզային համակարգ",1],["digestive system","մարսողական համակարգ",1],["respiratory system","շնչառական համակարգ",1],["circulatory system","արյան շրջանառության համակարգ",1],["nervous system","նյարդային համակարգ",1],["skeletal system","կմախքային համակարգ",1],["muscular system","մկանային համակարգ",1],["immune system","իմունային համակարգ",1],["reproductive system","վերարտադրողական համակարգ",1],["retina","ցանցաթաղանթ",1],["pupil","բիբ",1],["iris","ծիածանաթաղանթ",1],["cornea","եղջերաթաղանթ",1],["lens","աչքի ոսպնյակ",1],["optic nerve","տեսողական նյարդ",1],["inner ear","ներքին ականջ",1],["eardrum","թմբկաթաղանթ",1],["cochlea","խխունջ",1],["nasal cavity","քթի խոռոչ",1],["oral cavity","բերանի խոռոչ",1],["pharynx","ըմպան",1],["larynx","կոկորդ",1],["bronchus","բրոնխ",1],["airway","շնչուղի",1],["alveolus","թոքաբշտիկ",1],["heart valve","սրտի փական",1],["aorta","աորտա",1],["pulse","զարկերակային անոթազարկ",1],["uterus","արգանդ",1],["ovary","ձվարան",1],["fallopian tube","արգանդափող",1],["vagina","հեշտոց",1],["prostate","շագանակագեղձ",1],["testicle","ամորձի",1],["penis","առնանդամ",1],["ureter","միզածորան",1],["urethra","միզուկ",1],["skin gland","մաշկի գեղձ",1],["sweat gland","քրտնագեղձ",1],["hair follicle","մազապարկ",1],["body system","օրգան համակարգ",1],["organ","օրգան",1],["tissue","հյուսվածք",1],["cell","բջիջ",1],["membrane","թաղանթ",1],["fluid","հեղուկ",1],["hormone","հորմոն",1],["heart rate","սրտի զարկերի հաճախություն",1],["blood circulation","արյան շրջանառություն",1],["breathing rate","շնչառության հաճախություն",1],["digestive tract","մարսողական ուղի",1],["food pipe","կերակրափող",1],["urine","մեզ",1],["stool","կղանք",1],["saliva","թուք",1],["sweat","քրտինք",1],["tear","արցունք",1],["ear canal","լսողական անցուղի",1],["middle ear","միջին ականջ",1],["outer ear","արտաքին ականջ",1],["auditory nerve","լսողական նյարդ",1],["tear gland","արցունքագեղձ",1],["vitreous body","ապակենման մարմին",1],["sclera","սպիտակուցային թաղանթ",1],["sinus","քթի ծոց",1],["vocal cords","ձայնալարեր",1],["lobe of the lung","թոքի բլթակ",1],["pleura","թոքամիզ",1],["chest cavity","կրծքավանդակի խոռոչ",1],["abdominal cavity","որովայնի խոռոչ",1],["atrium","սրտի նախասիրտ",1],["ventricle","սրտի փորոք",1],["pericardium","սրտապարկ",1],["heart muscle","սրտամկան",1],["coronary artery","պսակաձև զարկերակ",1],["carotid artery","քնային զարկերակ",1],["spinal cord","ողնուղեղ",1],["cerebellum","ուղեղիկ",1],["cerebral hemisphere","ուղեղի կիսագունդ",1],["brain stem","ուղեղի ցողուն",1],["meninges","ուղեղի թաղանթներ",1],["cerebrospinal fluid","ողնուղեղային հեղուկ",1],["sense organ","զգայարան",1],["vision","տեսողություն",1],["hearing","լսողություն",1],["sense of smell","հոտառություն",1],["sense of taste","համային զգացողություն",1],["sense of touch","շոշափում",1],["taste bud","համային բշտիկ",1],["mammary gland","կաթնագեղձ",1],["thymus","ուրցագեղձ",1],["parathyroid gland","մակվահանաձև գեղձ",1],["sebaceous gland","ճարպագեղձ",1],["bile","լեղի",1],["bile duct","լեղածորան",1],["gastric juice","ստամոքսահյութ",1],["insulin","ինսուլին",1],["duodenum","տասներկումատնյա աղիք",1],["rectum","ուղիղ աղիք",1],["anus","հետանցք",1],["mucous membrane","լորձաթաղանթ",1],["mucus","լորձ",1],["urinary tract","միզուղիներ",1],["placenta","ընկերք",1],["umbilical cord","պորտալար",1],["embryo","սաղմ",1],["fetus","պտուղ",1],["sperm","սերմնաբջիջ",1],["egg cell","ձվաբջիջ",1],["hemoglobin","հեմոգլոբին",1],["blood type","արյան խումբ",1],["lymphatic system","ավշային համակարգ",1],["endocrine system","ներզատական համակարգ",1],["central nervous system","կենտրոնական նյարդային համակարգ",1],["peripheral nervous system","ծայրամասային նյարդային համակարգ",1],["neuron","նեյրոն",1],["muscle fiber","մկանաթել",1],["chromosome","քրոմոսոմ",1],["gene","գեն",1],["cell nucleus","բջջակորիզ",1],["connective tissue","շարակցական հյուսվածք",1],["muscle tissue","մկանային հյուսվածք",1],["fat tissue","ճարպային հյուսվածք",1],["cold","մրսածություն",2],["flu","գրիպ",2],["fever","տենդ",2],["infection","վարակ",2],["viral infection","վիրուսային վարակ",2],["bacterial infection","բակտերիալ վարակ",2],["sore throat","կոկորդի ցավ",2],["tonsillitis","նշագեղձերի բորբոքում",2],["ear infection","ականջի վարակ",2],["earache","ականջացավ",2],["sinusitis","հարբուխային խոռոչների բորբոքում",2],["cough","հազ",2],["bronchitis","բրոնխիտ",2],["pneumonia","թոքաբորբ",2],["asthma","ասթմա",2],["allergy","ալերգիա",2],["hay fever","ալերգիկ հարբուխ",2],["rash","ցան",2],["eczema","էկզեմա",2],["acne","պզուկներ",2],["fungal infection","սնկային վարակ",2],["food poisoning","սննդային թունավորում",2],["stomachache","ստամոքսի ցավ",2],["indigestion","մարսողության խանգարում",2],["heartburn","այրոց",2],["diarrhea","փորլուծություն",2],["constipation","փորկապություն",2],["nausea","սրտխառնոց",2],["vomiting","փսխում",2],["ulcer","խոց",2],["appendicitis","որդանման ելունի բորբոքում",2],["hepatitis","հեպատիտ",2],["diabetes","շաքարային դիաբետ",2],["high blood pressure","արյան բարձր ճնշում",2],["low blood pressure","արյան ցածր ճնշում",2],["heart disease","սրտի հիվանդություն",2],["heart attack","սրտի կաթված",2],["stroke","կաթված",2],["anemia","սակավարյունություն",2],["headache","գլխացավ",2],["migraine","միգրեն",2],["dizziness","գլխապտույտ",2],["fainting","ուշագնացություն",2],["insomnia","անքնություն",2],["arthritis","հոդաբորբ",2],["back pain","մեջքի ցավ",2],["tooth decay","ատամի կարիես",2],["gum disease","լնդերի հիվանդություն",2],["cavity","ատամի խոռոչ",2],["conjunctivitis","շաղկապենաբորբ",2],["short-sightedness","կարճատեսություն",2],["long-sightedness","հեռատեսություն",2],["hearing loss","լսողության կորուստ",2],["obesity","ճարպակալում",2],["overweight","ավելորդ քաշ",2],["dehydration","ջրազրկում",2],["heatstroke","ջերմային հարված",2],["hypothermia","գերսառեցում",2],["burn","այրվածք",2],["sunburn","արևայրուք",2],["wound","վերք",2],["bruise","կապտուկ",2],["fracture","կոտրվածք",2],["sprain","ձգվածք",2],["dislocation","հոդախախտ",2],["bleeding","արյունահոսություն",2],["nosebleed","քթային արյունահոսություն",2],["varicose veins","երակների վարիկոզ լայնացում",2],["kidney stone","երիկամի քար",2],["urinary infection","միզուղիների վարակ",2],["chickenpox","ջրծաղիկ",2],["measles","կարմրուկ",2],["mumps","խոզուկ",2],["rubella","կարմրախտ",2],["whooping cough","կապույտ հազ",2],["tuberculosis","տուբերկուլյոզ",2],["meningitis","մենինգիտ",2],["depression","ընկճախտ",2],["anxiety disorder","տագնապային խանգարում",2],["cancer","քաղցկեղ",2],["tumor","ուռուցք",2],["common condition","տարածված վիճակ",2],["hypertension","հիպերտոնիա",2],["gastritis","գաստրիտ",2],["osteoporosis","օստեոպորոզ",2],["epilepsy","էպիլեպսիա",2],["jaundice","դեղնախտ",2],["gallstone","լեղաքար",2],["hernia","ճողվածք",2],["gout","հոդատապ",2],["scoliosis","սկոլիոզ",2],["goiter","խպիպ",2],["cholera","խոլերա",2],["pain","ցավ",3],["ache","ցավ",3],["toothache","ատամնացավ",3],["stomach pain","որովայնի ցավ",3],["chest pain","կրծքավանդակի ցավ",3],["backache","մեջքի ցավ",3],["joint pain","հոդացավ",3],["muscle pain","մկանային ցավ",3],["high temperature","բարձր ջերմություն",3],["chills","դող",3],["sweating","քրտնարտադրություն",3],["night sweats","գիշերային քրտնարտադրություն",3],["dry cough","չոր հազ",3],["wet cough","խորխով հազ",3],["sneezing","փռշտոց",3],["runny nose","քթահոսություն",3],["blocked nose","քթի փակվածություն",3],["shortness of breath","շնչահեղձություն",3],["wheezing","սուլոցով շնչառություն",3],["rapid breathing","արագ շնչառություն",3],["difficulty breathing","շնչելու դժվարություն",3],["fast heartbeat","արագ սրտխփոց",3],["irregular heartbeat","սրտի անկանոն զարկեր",3],["palpitations","սրտխփոց",3],["weakness","թուլություն",3],["tiredness","հոգնածություն",3],["fatigue","հյուծվածություն",3],["faintness","ուշագնացության զգացում",3],["loss of consciousness","գիտակցության կորուստ",3],["bloating","փքվածություն",3],["loss of appetite","ախորժակի կորուստ",3],["thirst","ծարավ",3],["dry mouth","բերանի չորություն",3],["itching","քոր",3],["swelling","այտուց",3],["redness","կարմրություն",3],["inflammation","բորբոքում",3],["blister","բշտիկ",3],["lump","գունդ",3],["numbness","թմրածություն",3],["tingling","ծակծկոց",3],["cramp","կծկանք",3],["stiffness","կարկամություն",3],["limping","կաղալ",3],["blurred vision","մշուշոտ տեսողություն",3],["double vision","երկտեսություն",3],["light sensitivity","լույսի նկատմամբ զգայունություն",3],["ringing in the ears","ականջներում աղմուկ",3],["hearing difficulty","լսելու դժվարություն",3],["sore eyes","աչքերի ցավ",3],["tearing","արցունքահոսություն",3],["pale skin","գունատ մաշկ",3],["yellow skin","մաշկի դեղնություն",3],["bruising","կապտուկների առաջացում",3],["blood in urine","արյուն մեզի մեջ",3],["painful urination","ցավոտ միզարձակում",3],["frequent urination","հաճախամիզություն",3],["difficulty swallowing","կուլ տալու դժվարություն",3],["hoarse voice","խռպոտ ձայն",3],["weight loss","քաշի կորուստ",3],["weight gain","քաշի ավելացում",3],["sleep problems","քնի խնդիրներ",3],["mood change","տրամադրության փոփոխություն",3],["confusion","շփոթվածություն",3],["memory problems","հիշողության խնդիրներ",3],["anxiety","տագնապ",3],["feeling unwell","ինքնազգացողության վատացում",3],["symptom","ախտանիշ",3],["complaint","գանգատ",3],["common cold","սովորական մրսածություն",3],["food allergy","սննդային ալերգիա",3],["dust allergy","փոշու ալերգիա",3],["motion sickness","ճանապարհային հիվանդություն",3],["motion sickness nausea","ճանապարհին առաջացող սրտխառնոց",3],["muscle weakness","մկանային թուլություն",3],["leg swelling","ոտքի այտուց",3],["dry skin","չոր մաշկ",3],["itchy skin","քոր եկող մաշկ",3],["stuffy nose","փակված քիթ",3],["loss of smell","հոտառության կորուստ",3],["loss of taste","համի կորուստ",3],["sensitivity","զգայունություն",3],["sensitivity to cold","ցրտի նկատմամբ զգայունություն",3],["sensitivity to heat","տաքության նկատմամբ զգայունություն",3],["skin cream","մաշկի քսուք",3],["hiccup","զկռտոց",3],["yawn","հորանջ",3],["snoring","խռմփոց",3],["itch","քոր",3],["hoarseness","խռպոտություն",3],["bad breath","բերանի տհաճ հոտ",3],["stiff neck","պարանոցի կարծրություն",3],["shivering","դողալ",3],["memory loss","հիշողության կորուստ",3],["irritability","դյուրագրգռություն",3],["medicine","դեղ",4],["medication","դեղամիջոց",4],["tablet","հաբ",4],["pill","դեղահատ",4],["capsule","պատիճ",4],["syrup","օշարակ",4],["drops","կաթիլներ",4],["eye drops","աչքի կաթիլներ",4],["ear drops","ականջի կաթիլներ",4],["cream","քսուք",4],["ointment","քսուք",4],["gel","գել",4],["spray","սփրեյ",4],["inhaler","ինհալատոր",4],["injection","ներարկում",4],["vaccine","պատվաստանյութ",4],["bandage","վիրակապ",4],["painkiller","ցավազրկող",4],["fever medicine","ջերմիջեցնող դեղ",4],["antibiotic","հակաբիոտիկ",4],["antiviral medicine","հակավիրուսային դեղ",4],["antifungal medicine","հակասնկային դեղ",4],["antiseptic","հականեխիչ",4],["disinfectant","ախտահանիչ",4],["allergy medicine","հակաալերգիկ դեղ",4],["cough medicine","հազի դեղ",4],["cough syrup","հազի օշարակ",4],["vitamin","վիտամին",4],["mineral","հանքանյութ",4],["iron supplement","երկաթի հավելում",4],["prescription","դեղատոմս",4],["dose","չափաբաժին",4],["dosage","դեղաչափ",4],["side effect","կողմնակի ազդեցություն",4],["warning","նախազգուշացում",4],["instruction","ցուցում",4],["label","պիտակ",4],["expiry date","պիտանիության ժամկետ",4],["pharmacy","դեղատուն",4],["pharmacist","դեղագործ",4],["treatment","բուժում",4],["therapy","թերապիա",4],["operation","վիրահատություն",4],["surgery","վիրաբուժություն",4],["first aid","առաջին օգնություն",4],["rest","հանգիստ",4],["bed rest","անկողնային ռեժիմ",4],["fluids","հեղուկներ",4],["water","ջուր",4],["rehydration","ջրազրկման լրացում",4],["physiotherapy","ֆիզիոթերապիա",4],["exercise","վարժություն",4],["massage","մերսում",4],["cold pack","սառը թրջոց",4],["ice pack","սառցե փաթեթ",4],["warm compress","տաք թրջոց",4],["stitches","կարեր",4],["plaster","կպչուն վիրակապ",4],["splint","անշարժացնող շինա",4],["cast","գիպս",4],["crutches","հենակներ",4],["wheelchair","անվասայլակ",4],["dose schedule","դեղի ընդունման ժամանակացույց",4],["take medicine","դեղ ընդունել",4],["swallow","կուլ տալ",4],["chew","ծամել",4],["apply","քսել",4],["rub","շփել",4],["inject","ներարկել",4],["inhale","ներշնչել",4],["recover","ապաքինվել",4],["heal","լավանալ",4],["prevent","կանխել",4],["relieve","թեթևացնել",4],["reduce pain","նվազեցնել ցավը",4],["lower fever","իջեցնել ջերմությունը",4],["medical advice","բժշկական խորհուրդ",4],["follow-up visit","կրկնակի այց",4],["check-up","բուժզննում",4],["treatment plan","բուժման ծրագիր",4],["pain relief","ցավի մեղմացում",4],["antacid","ստամոքսի թթվայնությունը նվազեցնող դեղ",4],["laxative","լուծողական",4],["oral rehydration solution","բերանային ջրազրկման դեմ լուծույթ",4],["saline solution","աղային լուծույթ",4],["eye ointment","աչքի քսուք",4],["medical alcohol","բժշկական սպիրտ",4],["therapeutic exercise","բուժական վարժություն",4],["medical appointment","բժշկական ընդունելություն",4],["hand cream","ձեռքի քսուք",4],["sleeping pill","քնաբեր դեղահաբ",4],["nasal spray","քթի սփրեյ",4],["suppository","մոմիկ",4],["chemotherapy","քիմիաթերապիա",4],["blood transfusion","արյան փոխներարկում",4],["dialysis","դիալիզ",4],["patch","բժշկական պլաստեր",4],["lozenge","ծծվող հաբ",4],["antihistamine","հակահիստամինային դեղ",4],["antiviral drug","հակավիրուսային դեղ",4],["anti-inflammatory drug","հակաբորբոքային դեղ",4],["doctor","բժիշկ",5],["family doctor","ընտանեկան բժիշկ",5],["general practitioner","ընդհանուր պրակտիկայի բժիշկ",5],["nurse","բուժքույր",5],["nursing assistant","բուժակի օգնական",5],["surgeon","վիրաբույժ",5],["dentist","ատամնաբույժ",5],["eye doctor","ակնաբույժ",5],["heart doctor","սրտաբան",5],["skin doctor","մաշկաբան",5],["children's doctor","մանկաբույժ",5],["women's health doctor","գինեկոլոգ",5],["brain doctor","նյարդաբան",5],["bone doctor","օրթոպեդ",5],["ear, nose and throat doctor","քիթ-կոկորդ-ականջաբան",5],["psychiatrist","հոգեբույժ",5],["psychologist","հոգեբան",5],["paramedic","շտապօգնության բուժաշխատող",5],["midwife","մանկաբարձուհի",5],["medical student","բժշկական ուսանող",5],["patient","հիվանդ",5],["visitor","այցելու",5],["caregiver","խնամող",5],["receptionist","ընդունարանի աշխատակից",5],["laboratory worker","լաբորատորիայի աշխատող",5],["radiologist","ռադիոլոգ",5],["physiotherapist","ֆիզիոթերապևտ",5],["dietitian","սննդաբան",5],["health worker","առողջապահական աշխատող",5],["hospital","հիվանդանոց",5],["clinic","կլինիկա",5],["health center","առողջության կենտրոն",5],["doctor's office","բժշկի կաբինետ",5],["emergency room","շտապ օգնության բաժանմունք",5],["operating room","վիրահատարան",5],["waiting room","սպասասրահ",5],["ward","հիվանդասենյակների բաժանմունք",5],["intensive care unit","վերակենդանացման բաժանմունք",5],["maternity ward","ծննդաբերական բաժանմունք",5],["children's ward","մանկական բաժանմունք",5],["laboratory","լաբորատորիա",5],["dentist's office","ատամնաբույժի կաբինետ",5],["ambulance station","շտապօգնության կայան",5],["blood bank","արյան բանկ",5],["medical school","բժշկական ուսումնարան",5],["medical record","բժշկական գրառում",5],["appointment","ընդունելության ժամ",5],["consultation","խորհրդատվություն",5],["examination","զննում",5],["patient history","հիվանդի պատմություն",5],["medical certificate","բժշկական տեղեկանք",5],["referral","ուղեգիր",5],["emergency","արտակարգ դեպք",5],["ambulance","շտապօգնության մեքենա",5],["health service","առողջապահական ծառայություն",5],["public health","հանրային առողջապահություն",5],["medical care","բժշկական օգնություն",5],["home care","տնային խնամք",5],["patient room","հիվանդասենյակ",5],["bed","մահճակալ",5],["medical team","բժշկական թիմ",5],["specialist","մասնագետ",5],["assistant","օգնական",5],["visitor's pass","այցելուի անցագիր",5],["hospital staff","հիվանդանոցի անձնակազմ",5],["health insurance","առողջության ապահովագրություն",5],["medical bill","բժշկական հաշիվ",5],["admission","հոսպիտալացում",5],["discharge","դուրսգրում",5],["care","խնամք",5],["treatment room","բուժասենյակ",5],["recovery room","ապաքինման սենյակ",5],["medical department","բաժանմունք",5],["health check","առողջության ստուգում",5],["patient safety","հիվանդի անվտանգություն",5],["medical assistant","բժշկական օգնական",5],["care home","խնամքի տուն",5],["medical center","բժշկական կենտրոն",5],["blood test room","արյան քննության սենյակ",5],["registration desk","գրանցման սեղան",5],["patient chart","հիվանդի քարտ",5],["health card","առողջության քարտ",5],["waiting list","հերթացուցակ",5],["medical chart","բժշկական աղյուսակ",5],["pediatrician","մանկաբույժ",5],["cardiologist","սրտաբան",5],["neurologist","նյարդաբան",5],["dermatologist","մաշկաբան",5],["ophthalmologist","աչքաբույժ",5],["oncologist","ուռուցքաբան",5],["gynecologist","գինեկոլոգ",5],["anesthesiologist","անզգայացնող բժիշկ",5],["laboratory assistant","լաբորանտ",5],["maternity hospital","ծննդատուն",5],["health","առողջություն",6],["healthy","առողջ",6],["ill","հիվանդ",6],["illness","հիվանդություն",6],["well-being","բարեկեցություն",6],["hygiene","հիգիենա",6],["personal hygiene","անձնական հիգիենա",6],["handwashing","ձեռքերի լվացում",6],["soap","օճառ",6],["shampoo","շամպուն",6],["toothbrush","ատամի խոզանակ",6],["toothpaste","ատամի մածուկ",6],["dental floss","ատամնաթել",6],["mouthwash","բերանի ողողման հեղուկ",6],["towel","սրբիչ",6],["clean water","մաքուր ջուր",6],["cleanliness","մաքրություն",6],["germ","մանրէ",6],["bacteria","բակտերիաներ",6],["virus","վիրուս",6],["microbe","մանրէ",6],["infection prevention","վարակի կանխարգելում",6],["hand sanitizer","ձեռքերի ախտահանիչ",6],["mask","դիմակ",6],["gloves","ձեռնոցներ",6],["healthy diet","առողջ սննդակարգ",6],["balanced diet","հավասարակշռված սննդակարգ",6],["nutrition","սնուցում",6],["food","սնունդ",6],["fruit","միրգ",6],["vegetable","բանջարեղեն",6],["protein","սպիտակուց",6],["carbohydrate","ածխաջուր",6],["fat","ճարպ",6],["fiber","բջջանյութ",6],["salt","աղ",6],["sugar","շաքար",6],["water intake","ջրի օգտագործում",6],["hydration","օրգանիզմի բավարար ջրով ապահովում",6],["physical activity","ֆիզիկական ակտիվություն",6],["walking","քայլել",6],["running","վազք",6],["stretching","ձգումներ",6],["sleep","քուն",6],["sleep routine","քնի ռեժիմ",6],["stress","սթրես",6],["relaxation","թուլացում",6],["mental health","հոգեկան առողջություն",6],["healthy habits","առողջ սովորություններ",6],["smoking","ծխել",6],["tobacco","ծխախոտ",6],["alcohol","ալկոհոլ",6],["drug use","թմրանյութերի օգտագործում",6],["addiction","կախվածություն",6],["sun protection","արևից պաշտպանություն",6],["sunscreen","արևապաշտպան քսուք",6],["fresh air","մաքուր օդ",6],["ventilation","օդափոխություն",6],["vaccination","պատվաստում",6],["screening","կանխարգելիչ հետազոտություն",6],["prevention","կանխարգելում",6],["risk","վտանգ",6],["safety","անվտանգություն",6],["healthy weight","առողջ քաշ",6],["body temperature","մարմնի ջերմաստիճան",6],["blood pressure","արյան ճնշում",6],["pulse rate","զարկերակի հաճախություն",6],["body mass","մարմնի զանգված",6],["growth","աճ",6],["development","զարգացում",6],["teenager","դեռահաս",6],["adult","չափահաս",6],["older person","տարեց մարդ",6],["pregnancy","հղիություն",6],["physical exercise","ֆիզիկական վարժություն",6],["bad habit","վատ սովորություն",6],["calorie","կալորիա",6],["deodorant","դեզոդորանտ",6],["shower","ցնցուղ",6],["bath","լոգանք",6],["vegetables","բանջարեղեն",6],["walk","զբոսանք",6],["jogging","վազք",6],["swimming","լող",6],["thermometer","ջերմաչափ",7],["blood pressure monitor","արյան ճնշման չափիչ",7],["stethoscope","ստետոսկոպ",7],["scale","կշեռք",7],["weighing scale","կշեռք",7],["measuring tape","չափերիզ",7],["tongue depressor","լեզվաճնշիչ",7],["flashlight","լապտեր",7],["otoscope","օտոսկոպ",7],["ophthalmoscope","ակնադիտակ",7],["syringe","ներարկիչ",7],["needle","ասեղ",7],["cotton wool","բամբակ",7],["cotton swab","բամբակյա փայտիկ",7],["gauze","թանզիֆ",7],["adhesive bandage","կպչուն վիրակապ",7],["medical tape","բժշկական կպչուն ժապավեն",7],["scissors","մկրատ",7],["tweezers","պինցետ",7],["forceps","ունելի",7],["face mask","դիմակ",7],["protective gown","պաշտպանիչ խալաթ",7],["surgical cap","վիրաբուժական գլխարկ",7],["disposable cup","մեկանգամյա բաժակ",7],["kidney dish","երիկամաձև սկուտեղ",7],["bedpan","անկողնային թաս",7],["urine container","մեզի տարա",7],["sample tube","նմուշի փորձանոթ",7],["test tube","փորձանոթ",7],["microscope","մանրադիտակ",7],["slide","առարկայական ապակի",7],["laboratory glass","լաբորատոր ապակեղեն",7],["centrifuge","ցենտրիֆուգ",7],["X-ray machine","ռենտգեն սարք",7],["ultrasound machine","ուլտրաձայնային սարք",7],["scanner","սկաներ",7],["MRI machine","ՄՌՏ սարք",7],["ECG machine","ԷՍԳ սարք",7],["heart monitor","սրտի մոնիտոր",7],["pulse oximeter","պուլսօքսիմետր",7],["oxygen mask","թթվածնային դիմակ",7],["oxygen tank","թթվածնի բալոն",7],["nebulizer","նեբուլայզեր",7],["walking frame","քայլակ",7],["crutch","հենակ",7],["walking stick","ձեռնափայտ",7],["hospital bed","հիվանդանոցային մահճակալ",7],["stretcher","պատգարակ",7],["neck collar","պարանոցի ֆիքսատոր",7],["hot water bottle","տաք ջրի պարկ",7],["first-aid kit","առաջին օգնության պայուսակ",7],["defibrillator","դեֆիբրիլյատոր",7],["suction device","արտածծիչ սարք",7],["urine test strip","մեզի թեստ-շերտիկ",7],["glucose meter","գլյուկոմետր",7],["lancet","մաշկ ծակող ասեղիկ",7],["dressing","վերքի վիրակապ",7],["surgical mask","բժշկական դիմակ",7],["disinfectant wipe","ախտահանիչ անձեռոցիկ",7],["hand sanitizer dispenser","ձեռքերի ախտահանիչի դիսպենսեր",7],["medical tray","բժշկական սկուտեղ",7],["instrument","գործիք",7],["equipment","սարքավորում",7],["device","սարք",7],["monitor","մոնիտոր",7],["alarm","ազդանշանային սարք",7],["lamp","լամպ",7],["examination table","զննման սեղան",7],["privacy screen","բաժանարար վարագույր",7],["medicine cabinet","դեղապահարան",7],["refrigerator","սառնարան",7],["sterilizer","մանրէազերծիչ",7],["waste bin","աղբաման",7],["disposable gloves","մեկանգամյա ձեռնոցներ",7],["protective glasses","պաշտպանիչ ակնոց",7],["surgical gloves","վիրաբուժական ձեռնոցներ",7],["medical cotton","բժշկական բամբակ",7],["gauze pad","թանզիֆե անձեռոցիկ",7],["thermometer cover","ջերմաչափի ծածկոց",7],["blood pressure cuff","ճնշաչափի թևկապ",7],["stethoscope head","ստետոսկոպի գլխիկ",7],["electrocardiograph","էլեկտրասրտագրիչ",7],["hearing aid","լսողական սարք",7],["glasses","ակնոց",7],["contact lenses","կոնտակտային ոսպնյակներ",7],["scalpel","սկալպել",7],["adhesive tape","կպչուն ժապավեն",7],["infusion pump","ինֆուզիոն պոմպ",7],["ventilator","արհեստական շնչառության սարք",7],["CT scanner","համակարգչային շերտագրիչ",7],["reflex hammer","ռեֆլեքսային մուրճիկ",7],["sterilization","ստերիլիզացում",7],["emergency number","շտապ օգնության համար",8],["call an ambulance","շտապօգնություն կանչել",8],["accident","դժբախտ պատահար",8],["injury","վնասվածք",8],["injured person","վիրավոր մարդ",8],["first aider","առաջին օգնություն ցուցաբերող",8],["danger","վտանգ",8],["scene","դեպքի վայր",8],["check for danger","ստուգել՝ արդյոք վտանգ կա",8],["conscious","գիտակից",8],["unconscious","անգիտակից",8],["response","արձագանք",8],["breathing","շնչառություն",8],["normal breathing","նորմալ շնչառություն",8],["not breathing","չի շնչում",8],["recovery position","կողքի անվտանգ դիրք",8],["CPR","սիրտ-թոքային վերակենդանացում",8],["chest compression","կրծքավանդակի սեղմում",8],["rescue breath","փրկարարական շնչառություն",8],["AED","ավտոմատ արտաքին դեֆիբրիլյատոր",8],["heavy bleeding","ուժեղ արյունահոսություն",8],["apply pressure","ճնշում գործադրել",8],["cut","կտրվածք",8],["scratch","քերծվածք",8],["clean the wound","մաքրել վերքը",8],["cover the wound","ծածկել վերքը",8],["cool the burn","սառեցնել այրվածքը",8],["scald","տաք հեղուկից այրվածք",8],["broken bone","կոտրված ոսկոր",8],["strain","մկանի կամ ջիլի ձգում",8],["poisoning","թունավորում",8],["overdose","գերդոզավորում",8],["choking","խեղդվելը",8],["choking person","խեղդվող մարդ",8],["allergic reaction","ալերգիկ ռեակցիա",8],["severe allergy","ծանր ալերգիա",8],["anaphylaxis","անաֆիլաքսիա",8],["seizure","ցնցումային նոպա",8],["shock","շոկ",8],["heat exhaustion","շոգից հյուծում",8],["frostbite","ցրտահարություն",8],["eye injury","աչքի վնասվածք",8],["head injury","գլխի վնասվածք",8],["spinal injury","ողնաշարի վնասվածք",8],["neck injury","պարանոցի վնասվածք",8],["chest injury","կրծքավանդակի վնասվածք",8],["abdominal injury","որովայնի վնասվածք",8],["shock blanket","ջերմապահպան ծածկոց",8],["sterile dressing","ստերիլ վիրակապ",8],["stay calm","հանգստություն պահպանել",8],["do not move","չշարժել",8],["reassure","հանգստացնել",8],["help","օգնություն",8],["救急","շտապ օգնություն",8],["fall","ընկնել",8],["fall injury","ընկնելու հետևանքով վնասվածք",8],["electric shock","էլեկտրահարում",8],["animal bite","կենդանու կծած",8],["insect bite","միջատի խայթոց",8],["bee sting","մեղվի խայթոց",8],["snake bite","օձի խայթոց",8],["splinter","փուշ",8],["foreign object","օտար մարմին",8],["eye wash","աչքի լվացում",8],["sunstroke","արևահարություն",8],["drowning","ջրահեղձություն",8],["insect sting","միջատի խայթոց",8],["pressure bandage","ճնշող վիրակապ",8],["evacuation","տարհանում",8],["stop the bleeding","կանգնեցնել արյունահոսությունը",8],["chest compressions","կրծքավանդակի սեղմումներ",8],["artificial respiration","արհեստական շնչառություն",8],["cardiac arrest","սրտի կանգ",8],["deep cut","խոր կտրվածք",8],["medical","բժշկական",9],["sign","նշան",9],["diagnosis","ախտորոշում",9],["test","թեստ",9],["result","արդյունք",9],["normal","նորմալ",9],["abnormal","աննորմալ",9],["mild","թեթև",9],["moderate","միջին աստիճանի",9],["severe","ծանր",9],["acute","սուր",9],["chronic","քրոնիկ",9],["painful","ցավոտ",9],["painless","անցավ",9],["unhealthy","անառողջ",9],["sick","հիվանդ",9],["recovery","ապաքինում",9],["healing","լավացում",9],["temperature","ջերմաստիճան",9],["heartbeat","սրտի զարկ",9],["weight","քաշ",9],["height","հասակ",9],["age","տարիք",9],["medical history","հիվանդության պատմություն",9],["family history","ընտանեկան հիվանդությունների պատմություն",9],["allergic","ալերգիկ",9],["blood test","արյան քննություն",9],["urine test","մեզի քննություն",9],["stool test","կղանքի քննություն",9],["X-ray","ռենտգեն",9],["ultrasound","ուլտրաձայնային հետազոտություն",9],["scan","սկանավորում",9],["sample","նմուշ",9],["laboratory result","լաբորատոր արդյունք",9],["blood group","արյան խումբ",9],["donor","դոնոր",9],["blood donation","արյան նվիրատվություն",9],["organ donation","օրգանի նվիրատվություն",9],["transplant","փոխպատվաստում",9],["anesthesia","անզգայացում",9],["local anesthesia","տեղային անզգայացում",9],["general anesthesia","ընդհանուր անզգայացում",9],["sterile","ստերիլ",9],["clean","մաքուր",9],["dirty","կեղտոտ",9],["disinfect","ախտահանել",9],["sterilize","մանրէազերծել",9],["contagious","վարակիչ",9],["spread","տարածվել",9],["protect","պաշտպանել",9],["risk factor","ռիսկի գործոն",9],["cause","պատճառ",9],["effect","ազդեցություն",9],["medicine label","դեղի պիտակ",9],["consent","համաձայնություն",9],["privacy","գաղտնիություն",9],["record","գրառում",9],["form","ձևաթուղթ",9],["follow-up","հետագա հսկողություն",9],["footstep","քայլ",9],["stomach flu","աղիքային վարակ",9],["sneezing fit","փռշտոցի նոպա",9],["medical procedure","բժշկական միջամտություն",9],["health advice","առողջության վերաբերյալ խորհուրդ",9],["health visitor","առողջապահական այցելու",9],["health condition","առողջական վիճակ",9],["medical care plan","բժշկական խնամքի ծրագիր",9],["epidemic","համաճարակ",9],["pandemic","համավարակ",9],["immunity","իմունիտետ",9],["medical test","անալիզ",9],["clinical","կլինիկական",9],["genetic","գենետիկական",9],["hereditary","ժառանգական",9],["quarantine","կարանտին",9],["incubation period","ինկուբացիոն շրջան",9],["newborn","նորածին",9]]},CATS=DATA.cats,WORDS=DATA.words.map((w,i)=>({en:w[0],hy:w[1],c:w[2],id:i}));
+const DATA={"cats":[["Body parts","Մարմնի մասեր"],["Organs and body systems","Օրգաններ և մարմնի համակարգեր"],["Common illnesses and conditions","Հաճախ հանդիպող հիվանդություններ"],["Symptoms and complaints","Ախտանիշներ և գանգատներ"],["Medicines and treatment","Դեղեր և բուժում"],["Medical people and places","Բժշկական մասնագետներ և վայրեր"],["Health, hygiene and lifestyle","Առողջություն, հիգիենա և ապրելակերպ"],["Medical tools and equipment","Բժշկական գործիքներ և սարքավորումներ"],["First aid and emergencies","Առաջին օգնություն և արտակարգ իրավիճակներ"],["General medical words","Ընդհանուր բժշկական բառապաշար"]],"words":[["body","մարմին",0],["head","գլուխ",0],["face","դեմք",0],["neck","պարանոց",0],["shoulder","ուս",0],["arm","բազուկ",0],["elbow","արմունկ",0],["forearm","նախաբազուկ",0],["wrist","դաստակ",0],["hand","ձեռք",0],["palm","ափ",0],["finger","մատ",0],["thumb","բութ մատ",0],["index finger","ցուցամատ",0],["middle finger","միջնամատ",0],["ring finger","մատնեմատ",0],["little finger","ճկույթ",0],["fingernail","եղունգ",0],["chest","կրծքավանդակ",0],["back","մեջք",0],["waist","գոտկատեղ",0],["abdomen","որովայն",0],["hip","կոնք",0],["buttock","հետույք",0],["leg","ոտք",0],["thigh","ազդր",0],["knee","ծունկ",0],["kneecap","ծնկոսկր",0],["shin","սրունք",0],["calf","սրունքի մկան",0],["ankle","կոճ",0],["foot","ոտնաթաթ",0],["heel","գարշապար",0],["toe","ոտքի մատ",0],["big toe","ոտքի բութ մատ",0],["sole","ներբան",0],["skin","մաշկ",0],["hair","մազ",0],["scalp","գլխամաշկ",0],["forehead","ճակատ",0],["temple","քունք",0],["cheek","այտ",0],["chin","կզակ",0],["jaw","ծնոտ",0],["ear","ականջ",0],["earlobe","ականջի բլթակ",0],["eye","աչք",0],["eyebrow","հոնք",0],["eyelash","թարթիչ",0],["eyelid","կոպ",0],["nose","քիթ",0],["nostril","քթանցք",0],["mouth","բերան",0],["lip","շրթունք",0],["tooth","ատամ",0],["gum","լնդ",0],["tongue","լեզու",0],["throat","կոկորդ",0],["voice","ձայն",0],["breast","կուրծք",0],["nipple","պտուկ",0],["navel","պորտ",0],["spine","ողնաշար",0],["rib","կող",0],["pelvis","կոնքավազան",0],["tailbone","պոչուկ",0],["joint","հոդ",0],["muscle","մկան",0],["tendon","ջիլ",0],["ligament","կապան",0],["bone","ոսկոր",0],["skull","գանգ",0],["brain","ուղեղ",0],["nerve","նյարդ",0],["blood vessel","արյունատար անոթ",0],["artery","զարկերակ",0],["vein","երակ",0],["capillary","մազանոթ",0],["body hair","մարմնի մազածածկույթ",0],["eyeball","ակնագունդ",0],["cheekbone","այտոսկր",0],["collarbone","անրակ",0],["upper arm","բազկի վերին հատված",0],["lower leg","ոտքի ստորին հատված",0],["body shape","մարմնի կառուցվածք",0],["body part","մարմնի մաս",0],["armpit","թևատակ",0],["groin","աճուկ",0],["nape","ծոծրակ",0],["top of the head","գլխի գագաթ",0],["eye socket","ակնակապիճ",0],["bridge of the nose","քթի կամուրջ",0],["moustache","բեղ",0],["beard","մորուք",0],["palate","քիմք",0],["uvula","լեզվակ",0],["incisor","կտրիչ ատամ",0],["canine tooth","ժանիք",0],["molar","աղորիք ատամ",0],["wisdom tooth","իմաստության ատամ",0],["baby tooth","կաթնատամ",0],["permanent tooth","մշտական ատամ",0],["tooth root","ատամի արմատ",0],["tooth crown","ատամի պսակ",0],["enamel","ատամի էմալ",0],["knuckle","մատի հոդ",0],["fist","բռունցք",0],["fingertip","մատի ծայր",0],["arch of the foot","ոտնաթաթի կամար",0],["vertebra","ողն",0],["cervical spine","պարանոցային ողնաշար",0],["thoracic spine","կրծքային ողնաշար",0],["lumbar spine","գոտկային ողնաշար",0],["sacrum","սրբոսկր",0],["sternum","կրծոսկր",0],["shoulder blade","թիակ",0],["humerus","բազկոսկր",0],["radius","ճաճանչոսկր",0],["ulna","արմնկոսկր",0],["femur","ազդրոսկր",0],["tibia","մեծ սրունքոսկր",0],["fibula","փոքր սրունքոսկր",0],["skeleton","կմախք",0],["rib cage","կողերի վանդակ",0],["jawbone","ծնոտոսկր",0],["upper jaw","վերին ծնոտ",0],["lower jaw","ստորին ծնոտ",0],["shoulder joint","ուսի հոդ",0],["knee joint","ծնկի հոդ",0],["hip joint","կոնքի հոդ",0],["biceps","երկգլուխ մկան",0],["triceps","եռագլուխ մկան",0],["abdominal muscle","որովայնի մկան",0],["chest muscle","կրծքի մկան",0],["back muscle","մեջքի մկան",0],["Achilles tendon","Աքիլեսյան ջիլ",0],["mole (on the skin)","խալ",0],["wrinkle","կնճիռ",0],["fingerprint","մատնահետք",0],["limb","վերջույթ",0],["upper limb","վերին վերջույթ",0],["lower limb","ստորին վերջույթ",0],["trunk","իրան",0],["upper lip","վերին շուրթ",0],["lower lip","ստորին շուրթ",0],["upper back","մեջքի վերին հատված",0],["lower back","մեջքի ստորին հատված",0],["heart","սիրտ",1],["lung","թոք",1],["liver","լյարդ",1],["kidney","երիկամ",1],["stomach","ստամոքս",1],["intestine","աղիք",1],["small intestine","բարակ աղիք",1],["large intestine","հաստ աղիք",1],["appendix","որդանման ելուն",1],["pancreas","ենթաստամոքսային գեղձ",1],["spleen","փայծաղ",1],["gallbladder","լեղապարկ",1],["bladder","միզապարկ",1],["esophagus","կերակրափող",1],["windpipe","շնչափող",1],["diaphragm","ստոծանի",1],["thyroid gland","վահանաձև գեղձ",1],["salivary gland","թքագեղձ",1],["pituitary gland","հիպոֆիզ",1],["adrenal gland","մակերիկամ",1],["tonsil","նշագեղձ",1],["lymph node","ավշային հանգույց",1],["lymph","ավիշ",1],["blood","արյուն",1],["plasma","արյան պլազմա",1],["red blood cell","կարմիր արյան բջիջ",1],["white blood cell","սպիտակ արյան բջիջ",1],["platelet","թրոմբոցիտ",1],["bone marrow","ոսկրածուծ",1],["cartilage","աճառ",1],["urinary system","միզային համակարգ",1],["digestive system","մարսողական համակարգ",1],["respiratory system","շնչառական համակարգ",1],["circulatory system","արյան շրջանառության համակարգ",1],["nervous system","նյարդային համակարգ",1],["skeletal system","կմախքային համակարգ",1],["muscular system","մկանային համակարգ",1],["immune system","իմունային համակարգ",1],["reproductive system","վերարտադրողական համակարգ",1],["retina","ցանցաթաղանթ",1],["pupil","բիբ",1],["iris","ծիածանաթաղանթ",1],["cornea","եղջերաթաղանթ",1],["lens","աչքի ոսպնյակ",1],["optic nerve","տեսողական նյարդ",1],["inner ear","ներքին ականջ",1],["eardrum","թմբկաթաղանթ",1],["cochlea","խխունջ",1],["nasal cavity","քթի խոռոչ",1],["oral cavity","բերանի խոռոչ",1],["pharynx","ըմպան",1],["larynx","կոկորդ",1],["bronchus","բրոնխ",1],["airway","շնչուղի",1],["alveolus","թոքաբշտիկ",1],["heart valve","սրտի փական",1],["aorta","աորտա",1],["pulse","զարկերակային անոթազարկ",1],["uterus","արգանդ",1],["ovary","ձվարան",1],["fallopian tube","արգանդափող",1],["vagina","հեշտոց",1],["prostate","շագանակագեղձ",1],["testicle","ամորձի",1],["penis","առնանդամ",1],["ureter","միզածորան",1],["urethra","միզուկ",1],["skin gland","մաշկի գեղձ",1],["sweat gland","քրտնագեղձ",1],["hair follicle","մազապարկ",1],["body system","օրգան համակարգ",1],["organ","օրգան",1],["tissue","հյուսվածք",1],["cell","բջիջ",1],["membrane","թաղանթ",1],["fluid","հեղուկ",1],["hormone","հորմոն",1],["heart rate","սրտի զարկերի հաճախություն",1],["blood circulation","արյան շրջանառություն",1],["breathing rate","շնչառության հաճախություն",1],["digestive tract","մարսողական ուղի",1],["food pipe","կերակրափող",1],["urine","մեզ",1],["stool","կղանք",1],["saliva","թուք",1],["sweat","քրտինք",1],["tear","արցունք",1],["ear canal","լսողական անցուղի",1],["middle ear","միջին ականջ",1],["outer ear","արտաքին ականջ",1],["auditory nerve","լսողական նյարդ",1],["tear gland","արցունքագեղձ",1],["vitreous body","ապակենման մարմին",1],["sclera","սպիտակուցային թաղանթ",1],["sinus","քթի ծոց",1],["vocal cords","ձայնալարեր",1],["lobe of the lung","թոքի բլթակ",1],["pleura","թոքամիզ",1],["chest cavity","կրծքավանդակի խոռոչ",1],["abdominal cavity","որովայնի խոռոչ",1],["atrium","սրտի նախասիրտ",1],["ventricle","սրտի փորոք",1],["pericardium","սրտապարկ",1],["heart muscle","սրտամկան",1],["coronary artery","պսակաձև զարկերակ",1],["carotid artery","քնային զարկերակ",1],["spinal cord","ողնուղեղ",1],["cerebellum","ուղեղիկ",1],["cerebral hemisphere","ուղեղի կիսագունդ",1],["brain stem","ուղեղի ցողուն",1],["meninges","ուղեղի թաղանթներ",1],["cerebrospinal fluid","ողնուղեղային հեղուկ",1],["sense organ","զգայարան",1],["vision","տեսողություն",1],["hearing","լսողություն",1],["sense of smell","հոտառություն",1],["sense of taste","համային զգացողություն",1],["sense of touch","շոշափում",1],["taste bud","համային բշտիկ",1],["mammary gland","կաթնագեղձ",1],["thymus","ուրցագեղձ",1],["parathyroid gland","մակվահանաձև գեղձ",1],["sebaceous gland","ճարպագեղձ",1],["bile","լեղի",1],["bile duct","լեղածորան",1],["gastric juice","ստամոքսահյութ",1],["insulin","ինսուլին",1],["duodenum","տասներկումատնյա աղիք",1],["rectum","ուղիղ աղիք",1],["anus","հետանցք",1],["mucous membrane","լորձաթաղանթ",1],["mucus","լորձ",1],["urinary tract","միզուղիներ",1],["placenta","ընկերք",1],["umbilical cord","պորտալար",1],["embryo","սաղմ",1],["fetus","պտուղ",1],["sperm","սերմնաբջիջ",1],["egg cell","ձվաբջիջ",1],["hemoglobin","հեմոգլոբին",1],["blood type","արյան խումբ",1],["lymphatic system","ավշային համակարգ",1],["endocrine system","ներզատական համակարգ",1],["central nervous system","կենտրոնական նյարդային համակարգ",1],["peripheral nervous system","ծայրամասային նյարդային համակարգ",1],["neuron","նեյրոն",1],["muscle fiber","մկանաթել",1],["chromosome","քրոմոսոմ",1],["gene","գեն",1],["cell nucleus","բջջակորիզ",1],["connective tissue","շարակցական հյուսվածք",1],["muscle tissue","մկանային հյուսվածք",1],["fat tissue","ճարպային հյուսվածք",1],["cold","մրսածություն",2],["flu","գրիպ",2],["fever","տենդ",2],["infection","վարակ",2],["viral infection","վիրուսային վարակ",2],["bacterial infection","բակտերիալ վարակ",2],["sore throat","կոկորդի ցավ",2],["tonsillitis","նշագեղձերի բորբոքում",2],["ear infection","ականջի վարակ",2],["earache","ականջացավ",2],["sinusitis","հարբուխային խոռոչների բորբոքում",2],["cough","հազ",2],["bronchitis","բրոնխիտ",2],["pneumonia","թոքաբորբ",2],["asthma","ասթմա",2],["allergy","ալերգիա",2],["hay fever","ալերգիկ հարբուխ",2],["rash","ցան",2],["eczema","էկզեմա",2],["acne","պզուկներ",2],["fungal infection","սնկային վարակ",2],["food poisoning","սննդային թունավորում",2],["stomachache","ստամոքսի ցավ",2],["indigestion","մարսողության խանգարում",2],["heartburn","այրոց",2],["diarrhea","փորլուծություն",2],["constipation","փորկապություն",2],["nausea","սրտխառնոց",2],["vomiting","փսխում",2],["ulcer","խոց",2],["appendicitis","որդանման ելունի բորբոքում",2],["hepatitis","հեպատիտ",2],["diabetes","շաքարային դիաբետ",2],["high blood pressure","արյան բարձր ճնշում",2],["low blood pressure","արյան ցածր ճնշում",2],["heart disease","սրտի հիվանդություն",2],["heart attack","սրտի կաթված",2],["stroke","կաթված",2],["anemia","սակավարյունություն",2],["headache","գլխացավ",2],["migraine","միգրեն",2],["dizziness","գլխապտույտ",2],["fainting","ուշագնացություն",2],["insomnia","անքնություն",2],["arthritis","հոդաբորբ",2],["back pain","մեջքի ցավ",2],["tooth decay","ատամի կարիես",2],["gum disease","լնդերի հիվանդություն",2],["cavity","ատամի խոռոչ",2],["conjunctivitis","շաղկապենաբորբ",2],["short-sightedness","կարճատեսություն",2],["long-sightedness","հեռատեսություն",2],["hearing loss","լսողության կորուստ",2],["obesity","ճարպակալում",2],["overweight","ավելորդ քաշ",2],["dehydration","ջրազրկում",2],["heatstroke","ջերմային հարված",2],["hypothermia","գերսառեցում",2],["burn","այրվածք",2],["sunburn","արևայրուք",2],["wound","վերք",2],["bruise","կապտուկ",2],["fracture","կոտրվածք",2],["sprain","ձգվածք",2],["dislocation","հոդախախտ",2],["bleeding","արյունահոսություն",2],["nosebleed","քթային արյունահոսություն",2],["varicose veins","երակների վարիկոզ լայնացում",2],["kidney stone","երիկամի քար",2],["urinary infection","միզուղիների վարակ",2],["chickenpox","ջրծաղիկ",2],["measles","կարմրուկ",2],["mumps","խոզուկ",2],["rubella","կարմրախտ",2],["whooping cough","կապույտ հազ",2],["tuberculosis","տուբերկուլյոզ",2],["meningitis","մենինգիտ",2],["depression","ընկճախտ",2],["anxiety disorder","տագնապային խանգարում",2],["cancer","քաղցկեղ",2],["tumor","ուռուցք",2],["common condition","տարածված վիճակ",2],["hypertension","հիպերտոնիա",2],["gastritis","գաստրիտ",2],["osteoporosis","օստեոպորոզ",2],["epilepsy","էպիլեպսիա",2],["jaundice","դեղնախտ",2],["gallstone","լեղաքար",2],["hernia","ճողվածք",2],["gout","հոդատապ",2],["scoliosis","սկոլիոզ",2],["goiter","խպիպ",2],["cholera","խոլերա",2],["pain","ցավ",3],["ache","ցավ",3],["toothache","ատամնացավ",3],["stomach pain","որովայնի ցավ",3],["chest pain","կրծքավանդակի ցավ",3],["backache","մեջքի ցավ",3],["joint pain","հոդացավ",3],["muscle pain","մկանային ցավ",3],["high temperature","բարձր ջերմություն",3],["chills","դող",3],["sweating","քրտնարտադրություն",3],["night sweats","գիշերային քրտնարտադրություն",3],["dry cough","չոր հազ",3],["wet cough","խորխով հազ",3],["sneezing","փռշտոց",3],["runny nose","քթահոսություն",3],["blocked nose","քթի փակվածություն",3],["shortness of breath","շնչահեղձություն",3],["wheezing","սուլոցով շնչառություն",3],["rapid breathing","արագ շնչառություն",3],["difficulty breathing","շնչելու դժվարություն",3],["fast heartbeat","արագ սրտխփոց",3],["irregular heartbeat","սրտի անկանոն զարկեր",3],["palpitations","սրտխփոց",3],["weakness","թուլություն",3],["tiredness","հոգնածություն",3],["fatigue","հյուծվածություն",3],["faintness","ուշագնացության զգացում",3],["loss of consciousness","գիտակցության կորուստ",3],["bloating","փքվածություն",3],["loss of appetite","ախորժակի կորուստ",3],["thirst","ծարավ",3],["dry mouth","բերանի չորություն",3],["itching","քոր",3],["swelling","այտուց",3],["redness","կարմրություն",3],["inflammation","բորբոքում",3],["blister","բշտիկ",3],["lump","գունդ",3],["numbness","թմրածություն",3],["tingling","ծակծկոց",3],["cramp","կծկանք",3],["stiffness","կարկամություն",3],["limping","կաղալ",3],["blurred vision","մշուշոտ տեսողություն",3],["double vision","երկտեսություն",3],["light sensitivity","լույսի նկատմամբ զգայունություն",3],["ringing in the ears","ականջներում աղմուկ",3],["hearing difficulty","լսելու դժվարություն",3],["sore eyes","աչքերի ցավ",3],["tearing","արցունքահոսություն",3],["pale skin","գունատ մաշկ",3],["yellow skin","մաշկի դեղնություն",3],["bruising","կապտուկների առաջացում",3],["blood in urine","արյուն մեզի մեջ",3],["painful urination","ցավոտ միզարձակում",3],["frequent urination","հաճախամիզություն",3],["difficulty swallowing","կուլ տալու դժվարություն",3],["hoarse voice","խռպոտ ձայն",3],["weight loss","քաշի կորուստ",3],["weight gain","քաշի ավելացում",3],["sleep problems","քնի խնդիրներ",3],["mood change","տրամադրության փոփոխություն",3],["confusion","շփոթվածություն",3],["memory problems","հիշողության խնդիրներ",3],["anxiety","տագնապ",3],["feeling unwell","ինքնազգացողության վատացում",3],["symptom","ախտանիշ",3],["complaint","գանգատ",3],["common cold","սովորական մրսածություն",3],["food allergy","սննդային ալերգիա",3],["dust allergy","փոշու ալերգիա",3],["motion sickness","ճանապարհային հիվանդություն",3],["motion sickness nausea","ճանապարհին առաջացող սրտխառնոց",3],["muscle weakness","մկանային թուլություն",3],["leg swelling","ոտքի այտուց",3],["dry skin","չոր մաշկ",3],["itchy skin","քոր եկող մաշկ",3],["stuffy nose","փակված քիթ",3],["loss of smell","հոտառության կորուստ",3],["loss of taste","համի կորուստ",3],["sensitivity","զգայունություն",3],["sensitivity to cold","ցրտի նկատմամբ զգայունություն",3],["sensitivity to heat","տաքության նկատմամբ զգայունություն",3],["skin cream","մաշկի քսուք",3],["hiccup","զկռտոց",3],["yawn","հորանջ",3],["snoring","խռմփոց",3],["itch","քոր",3],["hoarseness","խռպոտություն",3],["bad breath","բերանի տհաճ հոտ",3],["stiff neck","պարանոցի կարծրություն",3],["shivering","դողալ",3],["memory loss","հիշողության կորուստ",3],["irritability","դյուրագրգռություն",3],["medicine","դեղ",4],["medication","դեղամիջոց",4],["tablet","հաբ",4],["pill","դեղահատ",4],["capsule","պատիճ",4],["syrup","օշարակ",4],["drops","կաթիլներ",4],["eye drops","աչքի կաթիլներ",4],["ear drops","ականջի կաթիլներ",4],["cream","քսուք",4],["ointment","քսուք",4],["gel","գել",4],["spray","սփրեյ",4],["inhaler","ինհալատոր",4],["injection","ներարկում",4],["vaccine","պատվաստանյութ",4],["bandage","վիրակապ",4],["painkiller","ցավազրկող",4],["fever medicine","ջերմիջեցնող դեղ",4],["antibiotic","հակաբիոտիկ",4],["antiviral medicine","հակավիրուսային դեղ",4],["antifungal medicine","հակասնկային դեղ",4],["antiseptic","հականեխիչ",4],["disinfectant","ախտահանիչ",4],["allergy medicine","հակաալերգիկ դեղ",4],["cough medicine","հազի դեղ",4],["cough syrup","հազի օշարակ",4],["vitamin","վիտամին",4],["mineral","հանքանյութ",4],["iron supplement","երկաթի հավելում",4],["prescription","դեղատոմս",4],["dose","չափաբաժին",4],["dosage","դեղաչափ",4],["side effect","կողմնակի ազդեցություն",4],["warning","նախազգուշացում",4],["instruction","ցուցում",4],["label","պիտակ",4],["expiry date","պիտանիության ժամկետ",4],["pharmacy","դեղատուն",4],["pharmacist","դեղագործ",4],["treatment","բուժում",4],["therapy","թերապիա",4],["operation","վիրահատություն",4],["surgery","վիրաբուժություն",4],["first aid","առաջին օգնություն",4],["rest","հանգիստ",4],["bed rest","անկողնային ռեժիմ",4],["fluids","հեղուկներ",4],["water","ջուր",4],["rehydration","ջրազրկման լրացում",4],["physiotherapy","ֆիզիոթերապիա",4],["exercise","վարժություն",4],["massage","մերսում",4],["cold pack","սառը թրջոց",4],["ice pack","սառցե փաթեթ",4],["warm compress","տաք թրջոց",4],["stitches","կարեր",4],["plaster","կպչուն վիրակապ",4],["splint","անշարժացնող շինա",4],["cast","գիպս",4],["crutches","հենակներ",4],["wheelchair","անվասայլակ",4],["dose schedule","դեղի ընդունման ժամանակացույց",4],["take medicine","դեղ ընդունել",4],["swallow","կուլ տալ",4],["chew","ծամել",4],["apply","քսել",4],["rub","շփել",4],["inject","ներարկել",4],["inhale","ներշնչել",4],["recover","ապաքինվել",4],["heal","լավանալ",4],["prevent","կանխել",4],["relieve","թեթևացնել",4],["reduce pain","նվազեցնել ցավը",4],["lower fever","իջեցնել ջերմությունը",4],["medical advice","բժշկական խորհուրդ",4],["follow-up visit","կրկնակի այց",4],["check-up","բուժզննում",4],["treatment plan","բուժման ծրագիր",4],["pain relief","ցավի մեղմացում",4],["antacid","ստամոքսի թթվայնությունը նվազեցնող դեղ",4],["laxative","լուծողական",4],["oral rehydration solution","բերանային ջրազրկման դեմ լուծույթ",4],["saline solution","աղային լուծույթ",4],["eye ointment","աչքի քսուք",4],["medical alcohol","բժշկական սպիրտ",4],["therapeutic exercise","բուժական վարժություն",4],["medical appointment","բժշկական ընդունելություն",4],["hand cream","ձեռքի քսուք",4],["sleeping pill","քնաբեր դեղահաբ",4],["nasal spray","քթի սփրեյ",4],["suppository","մոմիկ",4],["chemotherapy","քիմիաթերապիա",4],["blood transfusion","արյան փոխներարկում",4],["dialysis","դիալիզ",4],["patch","բժշկական պլաստեր",4],["lozenge","ծծվող հաբ",4],["antihistamine","հակահիստամինային դեղ",4],["antiviral drug","հակավիրուսային դեղ",4],["anti-inflammatory drug","հակաբորբոքային դեղ",4],["doctor","բժիշկ",5],["family doctor","ընտանեկան բժիշկ",5],["general practitioner","ընդհանուր պրակտիկայի բժիշկ",5],["nurse","բուժքույր",5],["nursing assistant","բուժակի օգնական",5],["surgeon","վիրաբույժ",5],["dentist","ատամնաբույժ",5],["eye doctor","ակնաբույժ",5],["heart doctor","սրտաբան",5],["skin doctor","մաշկաբան",5],["children's doctor","մանկաբույժ",5],["women's health doctor","գինեկոլոգ",5],["brain doctor","նյարդաբան",5],["bone doctor","օրթոպեդ",5],["ear, nose and throat doctor","քիթ-կոկորդ-ականջաբան",5],["psychiatrist","հոգեբույժ",5],["psychologist","հոգեբան",5],["paramedic","շտապօգնության բուժաշխատող",5],["midwife","մանկաբարձուհի",5],["medical student","բժշկական ուսանող",5],["patient","հիվանդ",5],["visitor","այցելու",5],["caregiver","խնամող",5],["receptionist","ընդունարանի աշխատակից",5],["laboratory worker","լաբորատորիայի աշխատող",5],["radiologist","ռադիոլոգ",5],["physiotherapist","ֆիզիոթերապևտ",5],["dietitian","սննդաբան",5],["health worker","առողջապահական աշխատող",5],["hospital","հիվանդանոց",5],["clinic","կլինիկա",5],["health center","առողջության կենտրոն",5],["doctor's office","բժշկի կաբինետ",5],["emergency room","շտապ օգնության բաժանմունք",5],["operating room","վիրահատարան",5],["waiting room","սպասասրահ",5],["ward","հիվանդասենյակների բաժանմունք",5],["intensive care unit","վերակենդանացման բաժանմունք",5],["maternity ward","ծննդաբերական բաժանմունք",5],["children's ward","մանկական բաժանմունք",5],["laboratory","լաբորատորիա",5],["dentist's office","ատամնաբույժի կաբինետ",5],["ambulance station","շտապօգնության կայան",5],["blood bank","արյան բանկ",5],["medical school","բժշկական ուսումնարան",5],["medical record","բժշկական գրառում",5],["appointment","ընդունելության ժամ",5],["consultation","խորհրդատվություն",5],["examination","զննում",5],["patient history","հիվանդի պատմություն",5],["medical certificate","բժշկական տեղեկանք",5],["referral","ուղեգիր",5],["emergency","արտակարգ դեպք",5],["ambulance","շտապօգնության մեքենա",5],["health service","առողջապահական ծառայություն",5],["public health","հանրային առողջապահություն",5],["medical care","բժշկական օգնություն",5],["home care","տնային խնամք",5],["patient room","հիվանդասենյակ",5],["bed","մահճակալ",5],["medical team","բժշկական թիմ",5],["specialist","մասնագետ",5],["assistant","օգնական",5],["visitor's pass","այցելուի անցագիր",5],["hospital staff","հիվանդանոցի անձնակազմ",5],["health insurance","առողջության ապահովագրություն",5],["medical bill","բժշկական հաշիվ",5],["admission","հոսպիտալացում",5],["discharge","դուրսգրում",5],["care","խնամք",5],["treatment room","բուժասենյակ",5],["recovery room","ապաքինման սենյակ",5],["medical department","բաժանմունք",5],["health check","առողջության ստուգում",5],["patient safety","հիվանդի անվտանգություն",5],["medical assistant","բժշկական օգնական",5],["care home","խնամքի տուն",5],["medical center","բժշկական կենտրոն",5],["blood test room","արյան քննության սենյակ",5],["registration desk","գրանցման սեղան",5],["patient chart","հիվանդի քարտ",5],["health card","առողջության քարտ",5],["waiting list","հերթացուցակ",5],["medical chart","բժշկական աղյուսակ",5],["pediatrician","մանկաբույժ",5],["cardiologist","սրտաբան",5],["neurologist","նյարդաբան",5],["dermatologist","մաշկաբան",5],["ophthalmologist","աչքաբույժ",5],["oncologist","ուռուցքաբան",5],["gynecologist","գինեկոլոգ",5],["anesthesiologist","անզգայացնող բժիշկ",5],["laboratory assistant","լաբորանտ",5],["maternity hospital","ծննդատուն",5],["health","առողջություն",6],["healthy","առողջ",6],["ill","հիվանդ",6],["illness","հիվանդություն",6],["well-being","բարեկեցություն",6],["hygiene","հիգիենա",6],["personal hygiene","անձնական հիգիենա",6],["handwashing","ձեռքերի լվացում",6],["soap","օճառ",6],["shampoo","շամպուն",6],["toothbrush","ատամի խոզանակ",6],["toothpaste","ատամի մածուկ",6],["dental floss","ատամնաթել",6],["mouthwash","բերանի ողողման հեղուկ",6],["towel","սրբիչ",6],["clean water","մաքուր ջուր",6],["cleanliness","մաքրություն",6],["germ","մանրէ",6],["bacteria","բակտերիաներ",6],["virus","վիրուս",6],["microbe","մանրէ",6],["infection prevention","վարակի կանխարգելում",6],["hand sanitizer","ձեռքերի ախտահանիչ",6],["mask","դիմակ",6],["gloves","ձեռնոցներ",6],["healthy diet","առողջ սննդակարգ",6],["balanced diet","հավասարակշռված սննդակարգ",6],["nutrition","սնուցում",6],["food","սնունդ",6],["fruit","միրգ",6],["vegetable","բանջարեղեն",6],["protein","սպիտակուց",6],["carbohydrate","ածխաջուր",6],["fat","ճարպ",6],["fiber","բջջանյութ",6],["salt","աղ",6],["sugar","շաքար",6],["water intake","ջրի օգտագործում",6],["hydration","օրգանիզմի բավարար ջրով ապահովում",6],["physical activity","ֆիզիկական ակտիվություն",6],["walking","քայլել",6],["running","վազք",6],["stretching","ձգումներ",6],["sleep","քուն",6],["sleep routine","քնի ռեժիմ",6],["stress","սթրես",6],["relaxation","թուլացում",6],["mental health","հոգեկան առողջություն",6],["healthy habits","առողջ սովորություններ",6],["smoking","ծխել",6],["tobacco","ծխախոտ",6],["alcohol","ալկոհոլ",6],["drug use","թմրանյութերի օգտագործում",6],["addiction","կախվածություն",6],["sun protection","արևից պաշտպանություն",6],["sunscreen","արևապաշտպան քսուք",6],["fresh air","մաքուր օդ",6],["ventilation","օդափոխություն",6],["vaccination","պատվաստում",6],["screening","կանխարգելիչ հետազոտություն",6],["prevention","կանխարգելում",6],["risk","վտանգ",6],["safety","անվտանգություն",6],["healthy weight","առողջ քաշ",6],["body temperature","մարմնի ջերմաստիճան",6],["blood pressure","արյան ճնշում",6],["pulse rate","զարկերակի հաճախություն",6],["body mass","մարմնի զանգված",6],["growth","աճ",6],["development","զարգացում",6],["teenager","դեռահաս",6],["adult","չափահաս",6],["older person","տարեց մարդ",6],["pregnancy","հղիություն",6],["physical exercise","ֆիզիկական վարժություն",6],["bad habit","վատ սովորություն",6],["calorie","կալորիա",6],["deodorant","դեզոդորանտ",6],["shower","ցնցուղ",6],["bath","լոգանք",6],["vegetables","բանջարեղեն",6],["walk","զբոսանք",6],["jogging","վազք",6],["swimming","լող",6],["thermometer","ջերմաչափ",7],["blood pressure monitor","արյան ճնշման չափիչ",7],["stethoscope","ստետոսկոպ",7],["scale","կշեռք",7],["weighing scale","կշեռք",7],["measuring tape","չափերիզ",7],["tongue depressor","լեզվաճնշիչ",7],["flashlight","լապտեր",7],["otoscope","օտոսկոպ",7],["ophthalmoscope","ակնադիտակ",7],["syringe","ներարկիչ",7],["needle","ասեղ",7],["cotton wool","բամբակ",7],["cotton swab","բամբակյա փայտիկ",7],["gauze","թանզիֆ",7],["adhesive bandage","կպչուն վիրակապ",7],["medical tape","բժշկական կպչուն ժապավեն",7],["scissors","մկրատ",7],["tweezers","պինցետ",7],["forceps","ունելի",7],["face mask","դիմակ",7],["protective gown","պաշտպանիչ խալաթ",7],["surgical cap","վիրաբուժական գլխարկ",7],["disposable cup","մեկանգամյա բաժակ",7],["kidney dish","երիկամաձև սկուտեղ",7],["bedpan","անկողնային թաս",7],["urine container","մեզի տարա",7],["sample tube","նմուշի փորձանոթ",7],["test tube","փորձանոթ",7],["microscope","մանրադիտակ",7],["slide","առարկայական ապակի",7],["laboratory glass","լաբորատոր ապակեղեն",7],["centrifuge","ցենտրիֆուգ",7],["X-ray machine","ռենտգեն սարք",7],["ultrasound machine","ուլտրաձայնային սարք",7],["scanner","սկաներ",7],["MRI machine","ՄՌՏ սարք",7],["ECG machine","ԷՍԳ սարք",7],["heart monitor","սրտի մոնիտոր",7],["pulse oximeter","պուլսօքսիմետր",7],["oxygen mask","թթվածնային դիմակ",7],["oxygen tank","թթվածնի բալոն",7],["nebulizer","նեբուլայզեր",7],["walking frame","քայլակ",7],["crutch","հենակ",7],["walking stick","ձեռնափայտ",7],["hospital bed","հիվանդանոցային մահճակալ",7],["stretcher","պատգարակ",7],["neck collar","պարանոցի ֆիքսատոր",7],["hot water bottle","տաք ջրի պարկ",7],["first-aid kit","առաջին օգնության պայուսակ",7],["defibrillator","դեֆիբրիլյատոր",7],["suction device","արտածծիչ սարք",7],["urine test strip","մեզի թեստ-շերտիկ",7],["glucose meter","գլյուկոմետր",7],["lancet","մաշկ ծակող ասեղիկ",7],["dressing","վերքի վիրակապ",7],["surgical mask","բժշկական դիմակ",7],["disinfectant wipe","ախտահանիչ անձեռոցիկ",7],["hand sanitizer dispenser","ձեռքերի ախտահանիչի դիսպենսեր",7],["medical tray","բժշկական սկուտեղ",7],["instrument","գործիք",7],["equipment","սարքավորում",7],["device","սարք",7],["monitor","մոնիտոր",7],["alarm","ազդանշանային սարք",7],["lamp","լամպ",7],["examination table","զննման սեղան",7],["privacy screen","բաժանարար վարագույր",7],["medicine cabinet","դեղապահարան",7],["refrigerator","սառնարան",7],["sterilizer","մանրէազերծիչ",7],["waste bin","աղբաման",7],["disposable gloves","մեկանգամյա ձեռնոցներ",7],["protective glasses","պաշտպանիչ ակնոց",7],["surgical gloves","վիրաբուժական ձեռնոցներ",7],["medical cotton","բժշկական բամբակ",7],["gauze pad","թանզիֆե անձեռոցիկ",7],["thermometer cover","ջերմաչափի ծածկոց",7],["blood pressure cuff","ճնշաչափի թևկապ",7],["stethoscope head","ստետոսկոպի գլխիկ",7],["electrocardiograph","էլեկտրասրտագրիչ",7],["hearing aid","լսողական սարք",7],["glasses","ակնոց",7],["contact lenses","կոնտակտային ոսպնյակներ",7],["scalpel","սկալպել",7],["adhesive tape","կպչուն ժապավեն",7],["infusion pump","ինֆուզիոն պոմպ",7],["ventilator","արհեստական շնչառության սարք",7],["CT scanner","համակարգչային շերտագրիչ",7],["reflex hammer","ռեֆլեքսային մուրճիկ",7],["sterilization","ստերիլիզացում",7],["emergency number","շտապ օգնության համար",8],["call an ambulance","շտապօգնություն կանչել",8],["accident","դժբախտ պատահար",8],["injury","վնասվածք",8],["injured person","վիրավոր մարդ",8],["first aider","առաջին օգնություն ցուցաբերող",8],["danger","վտանգ",8],["scene","դեպքի վայր",8],["check for danger","ստուգել՝ արդյոք վտանգ կա",8],["conscious","գիտակից",8],["unconscious","անգիտակից",8],["response","արձագանք",8],["breathing","շնչառություն",8],["normal breathing","նորմալ շնչառություն",8],["not breathing","չի շնչում",8],["recovery position","կողքի անվտանգ դիրք",8],["CPR","սիրտ-թոքային վերակենդանացում",8],["chest compression","կրծքավանդակի սեղմում",8],["rescue breath","փրկարարական շնչառություն",8],["AED","ավտոմատ արտաքին դեֆիբրիլյատոր",8],["heavy bleeding","ուժեղ արյունահոսություն",8],["apply pressure","ճնշում գործադրել",8],["cut","կտրվածք",8],["scratch","քերծվածք",8],["clean the wound","մաքրել վերքը",8],["cover the wound","ծածկել վերքը",8],["cool the burn","սառեցնել այրվածքը",8],["scald","տաք հեղուկից այրվածք",8],["broken bone","կոտրված ոսկոր",8],["strain","մկանի կամ ջիլի ձգում",8],["poisoning","թունավորում",8],["overdose","գերդոզավորում",8],["choking","խեղդվելը",8],["choking person","խեղդվող մարդ",8],["allergic reaction","ալերգիկ ռեակցիա",8],["severe allergy","ծանր ալերգիա",8],["anaphylaxis","անաֆիլաքսիա",8],["seizure","ցնցումային նոպա",8],["shock","շոկ",8],["heat exhaustion","շոգից հյուծում",8],["frostbite","ցրտահարություն",8],["eye injury","աչքի վնասվածք",8],["head injury","գլխի վնասվածք",8],["spinal injury","ողնաշարի վնասվածք",8],["neck injury","պարանոցի վնասվածք",8],["chest injury","կրծքավանդակի վնասվածք",8],["abdominal injury","որովայնի վնասվածք",8],["shock blanket","ջերմապահպան ծածկոց",8],["sterile dressing","ստերիլ վիրակապ",8],["stay calm","հանգստություն պահպանել",8],["do not move","չշարժել",8],["reassure","հանգստացնել",8],["help","օգնություն",8],["救急","շտապ օգնություն",8],["fall","ընկնել",8],["fall injury","ընկնելու հետևանքով վնասվածք",8],["electric shock","էլեկտրահարում",8],["animal bite","կենդանու կծած",8],["insect bite","միջատի խայթոց",8],["bee sting","մեղվի խայթոց",8],["snake bite","օձի խայթոց",8],["splinter","փուշ",8],["foreign object","օտար մարմին",8],["eye wash","աչքի լվացում",8],["sunstroke","արևահարություն",8],["drowning","ջրահեղձություն",8],["insect sting","միջատի խայթոց",8],["pressure bandage","ճնշող վիրակապ",8],["evacuation","տարհանում",8],["stop the bleeding","կանգնեցնել արյունահոսությունը",8],["chest compressions","կրծքավանդակի սեղմումներ",8],["artificial respiration","արհեստական շնչառություն",8],["cardiac arrest","սրտի կանգ",8],["deep cut","խոր կտրվածք",8],["medical","բժշկական",9],["sign","նշան",9],["diagnosis","ախտորոշում",9],["test","թեստ",9],["result","արդյունք",9],["normal","նորմալ",9],["abnormal","աննորմալ",9],["mild","թեթև",9],["moderate","միջին աստիճանի",9],["severe","ծանր",9],["acute","սուր",9],["chronic","քրոնիկ",9],["painful","ցավոտ",9],["painless","անցավ",9],["unhealthy","անառողջ",9],["sick","հիվանդ",9],["recovery","ապաքինում",9],["healing","լավացում",9],["temperature","ջերմաստիճան",9],["heartbeat","սրտի զարկ",9],["weight","քաշ",9],["height","հասակ",9],["age","տարիք",9],["medical history","հիվանդության պատմություն",9],["family history","ընտանեկան հիվանդությունների պատմություն",9],["allergic","ալերգիկ",9],["blood test","արյան քննություն",9],["urine test","մեզի քննություն",9],["stool test","կղանքի քննություն",9],["X-ray","ռենտգեն",9],["ultrasound","ուլտրաձայնային հետազոտություն",9],["scan","սկանավորում",9],["sample","նմուշ",9],["laboratory result","լաբորատոր արդյունք",9],["blood group","արյան խումբ",9],["donor","դոնոր",9],["blood donation","արյան նվիրատվություն",9],["organ donation","օրգանի նվիրատվություն",9],["transplant","փոխպատվաստում",9],["anesthesia","անզգայացում",9],["local anesthesia","տեղային անզգայացում",9],["general anesthesia","ընդհանուր անզգայացում",9],["sterile","ստերիլ",9],["clean","մաքուր",9],["dirty","կեղտոտ",9],["disinfect","ախտահանել",9],["sterilize","մանրէազերծել",9],["contagious","վարակիչ",9],["spread","տարածվել",9],["protect","պաշտպանել",9],["risk factor","ռիսկի գործոն",9],["cause","պատճառ",9],["effect","ազդեցություն",9],["medicine label","դեղի պիտակ",9],["consent","համաձայնություն",9],["privacy","գաղտնիություն",9],["record","գրառում",9],["form","ձևաթուղթ",9],["follow-up","հետագա հսկողություն",9],["footstep","քայլ",9],["stomach flu","աղիքային վարակ",9],["sneezing fit","փռշտոցի նոպա",9],["medical procedure","բժշկական միջամտություն",9],["health advice","առողջության վերաբերյալ խորհուրդ",9],["health visitor","առողջապահական այցելու",9],["health condition","առողջական վիճակ",9],["medical care plan","բժշկական խնամքի ծրագիր",9],["epidemic","համաճարակ",9],["pandemic","համավարակ",9],["immunity","իմունիտետ",9],["medical test","անալիզ",9],["clinical","կլինիկական",9],["genetic","գենետիկական",9],["hereditary","ժառանգական",9],["quarantine","կարանտին",9],["incubation period","ինկուբացիոն շրջան",9],["newborn","նորածին",9]]};
+/* ---- extra content (appended to the original data; original ids stay stable) ---- */
+// entries removed from the display (junk / duplicates). They stay in DATA so saved ♥ ids never shift.
+const DROP=new Set(["救急","footstep","vegetables"]);
+DATA.cats.push(
+ ["Tests and measurements","Քննություններ և ցուցանիշներ"],
+ ["Pregnancy and childbirth","Հղիություն և ծննդաբերություն"],
+ ["Dentistry","Ատամնաբուժություն"],
+ ["Mental health","Հոգեկան առողջություն"]
+);
+DATA.words.push(
+/* illnesses */
+["COVID-19","COVID-19",2],["HIV infection","ՄԻԱՎ վարակ",2],["AIDS","ՁԻԱՀ",2],["thrombosis","թրոմբոզ",2],["blood clot","արյան թրոմբ",2],
+["pancreatitis","ենթաստամոքսային գեղձի բորբոքում",2],["cystitis","միզապարկի բորբոքում",2],["COPD","թոքերի քրոնիկ օբստրուկտիվ հիվանդություն",2],
+["heart failure","սրտային անբավարարություն",2],["arrhythmia","առիթմիա",2],["atherosclerosis","աթերոսկլերոզ",2],["high cholesterol","բարձր խոլեստերին",2],
+["coronary heart disease","սրտի իշեմիկ հիվանդություն",2],["type 1 diabetes","1-ին տիպի շաքարային դիաբետ",2],["type 2 diabetes","2-րդ տիպի շաքարային դիաբետ",2],
+["hypothyroidism","հիպոթիրեոզ",2],["hyperthyroidism","հիպերթիրեոզ",2],["cirrhosis","լյարդի ցիռոզ",2],["colitis","կոլիտ",2],["celiac disease","ցելիակիա",2],
+["lactose intolerance","լակտոզայի անհանդուրժողականություն",2],["glaucoma","գլաուկոմա",2],["cataract","կատարակտ",2],["osteoarthritis","օստեոարթրոզ",2],
+["herniated disc","միջողնային սկավառակի ճողվածք",2],["hemorrhoids","հեմոռոյ",2],["psoriasis","պսորիազ",2],["dermatitis","մաշկաբորբ",2],["urticaria","եղինջախտ",2],
+["herpes","հերպես",2],["shingles","գոտևորող հերպես",2],["scabies","քոս",2],["sepsis","սեպսիս",2],["leukemia","լեյկոզ",2],["malaria","մալարիա",2],
+["rabies","կատաղություն",2],["tetanus","տետանուս",2],["polio","պոլիոմիելիտ",2],["diphtheria","դիֆթերիա",2],["pharyngitis","ըմպանի բորբոքում",2],
+["laryngitis","լարինգիտ",2],["rhinitis","ռինիտ",2],
+/* symptoms */
+["sharp pain","սուր ցավ",3],["dull pain","բութ ցավ",3],["burning pain","այրող ցավ",3],["throbbing pain","բաբախող ցավ",3],["stabbing pain","ծակող ցավ",3],
+["radiating pain","տարածվող ցավ",3],["constant pain","մշտական ցավ",3],["mild pain","թեթև ցավ",3],["severe pain","ուժեղ ցավ",3],["stomach cramps","որովայնի կծկանքներ",3],
+["burning sensation","այրոցի զգացում",3],["heaviness","ծանրության զգացում",3],["chest tightness","կրծքավանդակի սեղմվածություն",3],["heavy legs","ոտքերի ծանրություն",3],
+["cold sweat","սառը քրտինք",3],["dark urine","մուգ մեզ",3],["black stool","սև կղանք",3],["blood in stool","արյուն կղանքի մեջ",3],["sputum","խորխ",3],
+["coughing up blood","արյուն խորխի մեջ",3],["hair loss","մազաթափություն",3],["excessive thirst","չափազանց ծարավ",3],["swollen lymph nodes","ավշային հանգույցների մեծացում",3],
+["dry eyes","աչքերի չորություն",3],
+/* medicines and treatment */
+["ibuprofen","իբուպրոֆեն",4],["paracetamol","պարացետամոլ",4],["aspirin","ասպիրին",4],["activated charcoal","ակտիվացված ածուխ",4],["probiotic","պրոբիոտիկ",4],
+["blood thinner","արյունը նոսրացնող դեղ",4],["steroid","ստերոիդ",4],["herbal remedy","բուսական դեղամիջոց",4],["over-the-counter medicine","առանց դեղատոմսի դեղ",4],
+["generic medicine","գեներիկ դեղ",4],["course of treatment","բուժման կուրս",4],["before meals","ուտելուց առաջ",4],["after meals","ուտելուց հետո",4],["with food","սնունդի հետ",4],
+["on an empty stomach","դատարկ ստամոքսին",4],["once a day","օրը մեկ անգամ",4],["twice a day","օրը երկու անգամ",4],["three times a day","օրը երեք անգամ",4],
+["at bedtime","քնելուց առաջ",4],["as needed","անհրաժեշտության դեպքում",4],["intravenous drip","կաթիլաներարկում",4],["intravenous injection","ներերակային ներարկում",4],
+["intramuscular injection","ներմկանային ներարկում",4],["contraindication","հակացուցում",4],["drug interaction","դեղերի փոխազդեցություն",4],["rehabilitation","վերականգնում",4],
+["radiotherapy","ճառագայթային թերապիա",4],["booster vaccination","կրկնակի պատվաստում",4],["gargle","ողողել կոկորդը",4],["steam inhalation","գոլորշու ինհալացիա",4],
+/* people and places */
+["urologist","ուրոլոգ",5],["endocrinologist","էնդոկրինոլոգ",5],["gastroenterologist","գաստրոէնտերոլոգ",5],["nephrologist","նեֆրոլոգ",5],["rheumatologist","ռևմատոլոգ",5],
+["pulmonologist","պուլմոնոլոգ",5],["hematologist","հեմատոլոգ",5],["allergist","ալերգոլոգ",5],["traumatologist","տրավմատոլոգ",5],["infectious disease specialist","վարակաբան",5],
+["internist","թերապևտ",5],["orthodontist","օրթոդոնտ",5],["psychotherapist","հոգեթերապևտ",5],["obstetrician","մանկաբարձ",5],["neonatologist","նեոնատոլոգ",5],
+["plastic surgeon","պլաստիկ վիրաբույժ",5],["medical interpreter","բժշկական թարգմանիչ",5],["polyclinic","պոլիկլինիկա",5],["sanatorium","առողջարան",5],
+["primary care","առաջնային առողջապահություն",5],["radiology department","ճառագայթաբանության բաժանմունք",5],["surgical ward","վիրաբուժական բաժանմունք",5],
+/* general */
+["prognosis","կանխատեսում",9],["relapse","ռեցիդիվ",9],["remission","ռեմիսիա",9],["complication","բարդություն",9],["benign","բարորակ",9],["malignant","չարորակ",9],
+["inflamed","բորբոքված",9],["swollen","այտուցված",9],["congenital","բնածին",9],["allergen","ալերգեն",9],["outbreak","բռնկում",9],["bedridden","անկողնային",9],
+["disability","հաշմանդամություն",9],["second opinion","երկրորդ կարծիք",9],["informed consent","տեղեկացված համաձայնություն",9],["confidential","գաղտնի",9],
+["left","ձախ",9],["right","աջ",9],["on the left side","ձախ կողմում",9],["on the right side","աջ կողմում",9],["both sides","երկու կողմերը",9],
+["morning","առավոտ",9],["evening","երեկո",9],["night","գիշեր",9],["every day","ամեն օր",9],["since yesterday","երեկվանից",9],["suddenly","հանկարծակի",9],
+["gradually","աստիճանաբար",9],["often","հաճախ",9],["sometimes","երբեմն",9],["never","երբեք",9],
+/* 10: tests and measurements */
+["glucose","գլյուկոզ",10],["blood sugar","արյան շաքար",10],["cholesterol","խոլեստերին",10],["cholesterol level","խոլեստերինի մակարդակ",10],
+["complete blood count","արյան ընդհանուր քննություն",10],["hemoglobin level","հեմոգլոբինի մակարդակ",10],["leukocytes","լեյկոցիտներ",10],["erythrocytes","էրիթրոցիտներ",10],
+["erythrocyte sedimentation rate","էրիթրոցիտների նստեցման արագություն",10],["urinalysis","մեզի ընդհանուր քննություն",10],["creatinine","կրեատինին",10],["bilirubin","բիլիրուբին",10],
+["thyroid hormones","վահանաձև գեղձի հորմոններ",10],["biopsy","բիոպսիա",10],["endoscopy","էնդոսկոպիա",10],["gastroscopy","գաստրոսկոպիա",10],["colonoscopy","կոլոնոսկոպիա",10],
+["electrocardiogram","էլեկտրասրտագրություն",10],["echocardiography","էխոկարդիոգրաֆիա",10],["mammography","մամոգրաֆիա",10],["MRI scan","մագնիսառեզոնանսային շերտագրություն",10],
+["CT scan","համակարգչային շերտագրություն",10],["bone density scan","ոսկրային խտության չափում",10],["stress test","ծանրաբեռնվածության թեստ",10],["PCR test","PCR թեստ",10],
+["rapid test","արագ թեստ",10],["allergy test","ալերգիայի թեստ",10],["eye test","տեսողության ստուգում",10],["hearing test","լսողության ստուգում",10],
+["blood pressure measurement","արյան ճնշման չափում",10],["blood sample","արյան նմուշ",10],["urine sample","մեզի նմուշ",10],["stool sample","կղանքի նմուշ",10],
+["reference range","նորմայի սահմաններ",10],["positive","դրական",10],["negative","բացասական",10],["elevated","բարձրացած",10],["lowered","իջած",10],
+["body mass index","մարմնի զանգվածի ինդեքս",10],["oxygen saturation","թթվածնային հագեցվածություն",10],
+/* 11: pregnancy and childbirth */
+["pregnant","հղի",11],["pregnancy test","հղիության թեստ",11],["gestation","հղիության շրջան",11],["trimester","եռամսյակ",11],["due date","ծննդաբերության սպասվող ամսաթիվ",11],
+["prenatal care","նախածննդյան խնամք",11],["morning sickness","առավոտյան սրտխառնոց",11],["labor","ծննդաբերություն",11],["contractions","կծկումներ",11],["birth","ծնունդ",11],
+["cesarean section","կեսարյան հատում",11],["epidural","էպիդուրալ անզգայացում",11],["amniotic fluid","պտղաջուր",11],["miscarriage","վիժում",11],["premature baby","վաղաժամ ծնված երեխա",11],
+["twins","երկվորյակներ",11],["postpartum","հետծննդյան",11],["breastfeeding","կրծքով կերակրում",11],["breast milk","կրծքի կաթ",11],["lactation","կաթնարտադրություն",11],
+["fertilization","բեղմնավորում",11],["infertility","անպտղություն",11],["contraception","հակաբեղմնավորում",11],["menstruation","դաշտան",11],["menopause","դաշտանադադար",11],
+["obstetrics","մանկաբարձություն",11],["gynecology","գինեկոլոգիա",11],
+/* 12: dentistry */
+["dental filling","ատամի լցոն",12],["dental implant","ատամի իմպլանտ",12],["braces","բրեկետներ",12],["dentures","ատամնապրոթեզ",12],["tooth extraction","ատամի հեռացում",12],
+["root canal treatment","ատամի ջրանցքների բուժում",12],["dental X-ray","ատամների ռենտգեն",12],["dental plaque","ատամնափառ",12],["tartar","ատամնաքար",12],
+["teeth cleaning","ատամների մաքրում",12],["bleeding gums","արյունահոսող լնդեր",12],["abscess","թարախակույտ",12],["bite","կծվածք",12],["mouth ulcer","բերանի խոց",12],
+["tooth sensitivity","ատամների զգայունություն",12],["loose tooth","երերացող ատամ",12],["broken tooth","կոտրված ատամ",12],["oral hygiene","բերանի խոռոչի հիգիենա",12],
+["periodontitis","պարոդոնտիտ",12],["caries","կարիես",12],["dental anesthesia","ատամնաբուժական անզգայացում",12],
+/* 13: mental health */
+["mental disorder","հոգեկան խանգարում",13],["panic attack","խուճապի նոպա",13],["panic","խուճապ",13],["burnout","հուզական հյուծում",13],["bipolar disorder","երկբևեռ խանգարում",13],
+["schizophrenia","շիզոֆրենիա",13],["obsessive-compulsive disorder","օբսեսիվ-կոմպուլսիվ խանգարում",13],["post-traumatic stress disorder","հետտրավմատիկ սթրեսային խանգարում",13],
+["eating disorder","սննդային վարքի խանգարում",13],["hallucination","հալյուցինացիա",13],["psychotherapy","հոգեթերապիա",13],["counselling","հոգեբանական խորհրդատվություն",13],
+["antidepressant","հակադեպրեսանտ",13],["sedative","հանգստացնող դեղ",13],["mood","տրամադրություն",13],["sadness","տխրություն",13],["fear","վախ",13],["loneliness","միայնություն",13],
+["self-esteem","ինքնագնահատական",13],["concentration","կենտրոնացում",13],["support group","աջակցության խումբ",13],["trauma","տրավմա",13],["nightmare","մղձավանջ",13]
+);
+
+/* ---- phrasebook ---- */
+const PH=[
+["Reception",[
+["I have an appointment.","Ես գրանցված եմ ընդունելության համար։"],
+["I would like to make an appointment.","Ես կցանկանայի գրանցվել բժշկի մոտ։"],
+["Where is the doctor's office?","Որտե՞ղ է բժշկի կաբինետը։"],
+["Do I need a referral?","Ուղեգի՞ր է պետք։"],
+["I need a medical certificate.","Ինձ բժշկական տեղեկանք է պետք։"],
+["Do you speak English?","Անգլերեն խոսո՞ւմ եք։"],
+["I don't understand.","Ես չեմ հասկանում։"],
+["Could you repeat that, please?","Կրկնեք, խնդրում եմ։"],
+["Could you speak more slowly?","Կարո՞ղ եք ավելի դանդաղ խոսել։"],
+["I need an interpreter.","Ինձ թարգմանիչ է պետք։"],
+["Please write it down.","Խնդրում եմ, գրեք։"]]],
+["Describing symptoms",[
+["I don't feel well.","Ես վատ եմ զգում։"],
+["It hurts here.","Այստեղ ցավում է։"],
+["My head hurts.","Գլուխս ցավում է։"],
+["I have a stomachache.","Որովայնս ցավում է։"],
+["I have a sore throat.","Կոկորդս ցավում է։"],
+["I have chest pain.","Կրծքավանդակս ցավում է։"],
+["I have a fever.","Ջերմություն ունեմ։"],
+["I have a cough.","Հազում եմ։"],
+["I feel dizzy.","Գլուխս պտտվում է։"],
+["I feel nauseous.","Սրտխառնոց ունեմ։"],
+["I have been vomiting.","Փսխում եմ։"],
+["I have diarrhea.","Փորլուծություն ունեմ։"],
+["I can't sleep.","Չեմ կարողանում քնել։"],
+["I have difficulty breathing.","Շնչելը դժվար է։"],
+["My heart is racing.","Սիրտս արագ է բաբախում։"],
+["I feel very weak.","Շատ թույլ եմ զգում։"],
+["I have a rash.","Ցան ունեմ։"],
+["It itches.","Քորում է։"],
+["I fell down.","Ընկել եմ։"],
+["I cut myself.","Կտրվել եմ։"],
+["It started yesterday.","Սկսվել է երեկ։"],
+["It started three days ago.","Սկսվել է երեք օր առաջ։"],
+["It hurts all the time.","Անընդհատ ցավում է։"],
+["It hurts when I move.","Շարժվելիս ցավում է։"],
+["The pain is sharp.","Ցավը սուր է։"],
+["The pain is getting worse.","Ցավը ուժեղանում է։"]]],
+["Medical history",[
+["I am allergic to penicillin.","Ես ալերգիա ունեմ պենիցիլինի նկատմամբ։"],
+["I have no allergies.","Ալերգիա չունեմ։"],
+["I have diabetes.","Շաքարային դիաբետ ունեմ։"],
+["I have high blood pressure.","Արյան բարձր ճնշում ունեմ։"],
+["I take this medicine every day.","Այս դեղը ամեն օր ընդունում եմ։"],
+["I am taking blood thinners.","Արյունը նոսրացնող դեղ եմ ընդունում։"],
+["I am pregnant.","Ես հղի եմ։"],
+["I had an operation last year.","Անցյալ տարի վիրահատվել եմ։"],
+["I smoke.","Ծխում եմ։"],
+["I don't smoke.","Չեմ ծխում։"],
+["Heart disease runs in my family.","Մեր ընտանիքում սրտի հիվանդություններ կան։"]]],
+["Doctor asks",[
+["What is the problem?","Ի՞նչն է Ձեզ անհանգստացնում։"],
+["Where does it hurt?","Որտե՞ղ է ցավում։"],
+["Since when have you had this?","Ե՞րբվանից է սա Ձեզ անհանգստացնում։"],
+["Is the pain constant?","Ցավը մշտակա՞ն է։"],
+["Do you have a fever?","Ջերմություն ունե՞ք։"],
+["Do you have any allergies?","Ալերգիա ունե՞ք։"],
+["Are you taking any medicine?","Որևէ դեղ ընդունո՞ւմ եք։"],
+["Are you pregnant?","Հղի՞ եք։"],
+["Do you smoke?","Ծխո՞ւմ եք։"],
+["Have you had this before?","Սա նախկինում եղե՞լ է։"]]],
+["Examination",[
+["Take a deep breath.","Խորը շնչեք։"],
+["Breathe normally.","Շնչեք սովորականի պես։"],
+["Open your mouth.","Բացեք բերանը։"],
+["Show me your tongue.","Ցույց տվեք լեզուն։"],
+["Cough, please.","Հազացեք, խնդրում եմ։"],
+["Lie down, please.","Պառկեք, խնդրում եմ։"],
+["Sit down, please.","Նստեք, խնդրում եմ։"],
+["Roll up your sleeve.","Վեր քաշեք թևը։"],
+["Take off your shirt.","Հանեք վերնաշապիկը։"],
+["Does it hurt here?","Այստեղ ցավո՞ւմ է։"],
+["Don't move.","Մի շարժվեք։"],
+["Relax.","Հանգստացեք։"],
+["I will measure your blood pressure.","Կչափեմ Ձեր արյան ճնշումը։"],
+["I will take your temperature.","Կչափեմ Ձեր ջերմաստիճանը։"],
+["We need to take a blood sample.","Պետք է արյուն վերցնենք։"],
+["You need an X-ray.","Ձեզ ռենտգեն է պետք։"],
+["You need to have some tests.","Պետք է անալիզներ հանձնեք։"]]],
+["Treatment and advice",[
+["Take one tablet three times a day.","Օրը երեք անգամ մեկական հաբ ընդունեք։"],
+["Take it after meals.","Ընդունեք ուտելուց հետո։"],
+["Take it on an empty stomach.","Ընդունեք դատարկ ստամոքսին։"],
+["Drink plenty of water.","Շատ ջուր խմեք։"],
+["You need to rest.","Պետք է հանգստանալ։"],
+["Stay in bed.","Մնացեք անկողնում։"],
+["Come back in a week.","Եկեք մեկ շաբաթից։"],
+["Call me if it gets worse.","Եթե վատանա, զանգահարեք։"],
+["Do not eat before the test.","Անալիզից առաջ մի կերեք։"],
+["You need surgery.","Ձեզ վիրահատություն է պետք։"],
+["It is not serious.","Սա լուրջ չէ։"],
+["There is nothing to worry about.","Անհանգստանալու պատճառ չկա։"],
+["You have an infection.","Ձեզ մոտ վարակ կա։"],
+["You must stop smoking.","Պետք է դադարեցնեք ծխելը։"],
+["Do not take this with alcohol.","Սա ալկոհոլի հետ չի կարելի ընդունել։"],
+["Here is your prescription.","Ահա Ձեր դեղատոմսը։"]]],
+["Pharmacy",[
+["Do you have something for a headache?","Գլխացավի համար ինչ-որ դեղ ունե՞ք։"],
+["I need something for a cough.","Ինձ հազի դեղ է պետք։"],
+["Do I need a prescription?","Դեղատոմս պե՞տք է։"],
+["How should I take it?","Ինչպե՞ս ընդունեմ։"],
+["How many times a day?","Օրը քանի՞ անգամ։"],
+["Are there any side effects?","Կողմնակի ազդեցություններ կա՞ն։"],
+["Can I take it during pregnancy?","Հղիության ժամանակ կարելի՞ է ընդունել։"],
+["Can I take it with other medicine?","Կարելի՞ է ընդունել այլ դեղերի հետ։"],
+["Is there a cheaper alternative?","Ավելի էժան անալոգ կա՞։"],
+["How much does it cost?","Որքա՞ն արժե։"]]],
+["Dentist",[
+["I have a toothache.","Ատամս ցավում է։"],
+["My tooth is broken.","Ատամս կոտրվել է։"],
+["My gums bleed.","Լնդերս արյունահոսում են։"],
+["I lost a filling.","Լցոնս ընկել է։"],
+["My tooth is sensitive to cold.","Ատամս զգայուն է ցրտի նկատմամբ։"],
+["It hurts when I chew.","Ծամելիս ցավում է։"],
+["I want to have my teeth cleaned.","Ուզում եմ ատամներս մաքրել։"],
+["You need a filling.","Ձեզ լցոն է պետք։"],
+["The tooth must be removed.","Ատամը պետք է հեռացնել։"],
+["Rinse your mouth.","Բերանը ողողեք։"],
+["Don't eat for two hours.","Երկու ժամ ոչինչ մի կերեք։"]]],
+["Emergency",[
+["Call an ambulance!","Շտապօգնություն կանչեք։"],
+["Help!","Օգնեք։"],
+["I need a doctor now.","Ինձ հիմա բժիշկ է պետք։"],
+["He is not breathing.","Նա չի շնչում։"],
+["She is unconscious.","Նա անգիտակից է։"],
+["There has been an accident.","Դժբախտ պատահար է եղել։"],
+["He is bleeding heavily.","Նա ուժեղ արյունահոսություն ունի։"],
+["I think it is broken.","Կարծում եմ՝ կոտրվել է։"],
+["A dog has bitten me.","Ինձ շունը կծել է։"],
+["I swallowed something.","Ինչ-որ բան կուլ եմ տվել։"],
+["I cannot breathe.","Չեմ կարողանում շնչել։"],
+["I think I am having a heart attack.","Կարծում եմ՝ սրտի կաթված եմ ստանում։"]]]
+];
+const PH_NOTE="Armenia: 112 is the unified emergency number, 103 is the ambulance.";
+
+/* ---- word parts: [part, meaning EN, meaning HY, example EN, example HY] ---- */
+const WP=[
+["-itis","inflammation","բորբոքում","arthritis","հոդաբորբ"],
+["-ectomy","surgical removal","վիրահատական հեռացում","appendectomy","որդանման ելունի հեռացում"],
+["-otomy","cutting, incision","հատում","tracheotomy","շնչափողի հատում"],
+["-ostomy","artificial opening","արհեստական բացվածք","colostomy","կոլոստոմա"],
+["-plasty","surgical repair","վերականգնող վիրահատություն","rhinoplasty","քթի պլաստիկ վիրահատություն"],
+["-scopy","examination with a scope","հետազոտություն օպտիկական սարքով","endoscopy","էնդոսկոպիա"],
+["-gram","a record or image","գրառում, պատկեր","cardiogram","սրտագրամ"],
+["-graphy","process of recording","պատկերման մեթոդ","radiography","ռենտգենոգրաֆիա"],
+["-logy","study of","գիտություն, ուսումնասիրություն","cardiology","սրտաբանություն"],
+["-logist","specialist in","մասնագետ","cardiologist","սրտաբան"],
+["-pathy","disease, disorder","հիվանդություն, ախտահարում","neuropathy","նեյրոպաթիա"],
+["-emia","condition of the blood","արյան վիճակ","anemia","սակավարյունություն"],
+["-algia","pain","ցավ","neuralgia","նյարդացավ"],
+["-oma","tumor","ուռուցք","carcinoma","կարցինոմա"],
+["-osis","condition, disease","վիճակ, հիվանդություն","thrombosis","թրոմբոզ"],
+["-megaly","enlargement","մեծացում","hepatomegaly","լյարդի մեծացում"],
+["-penia","deficiency","պակասություն","leukopenia","լեյկոցիտների պակաս"],
+["-rrhea","flow, discharge","հոսք","diarrhea","փորլուծություն"],
+["-uria","condition of the urine","մեզի վիճակ","hematuria","արյուն մեզի մեջ"],
+["-phobia","fear","վախ","claustrophobia","փակ տարածքի վախ"],
+["hyper-","over, too much","ավելի, գերբարձր","hypertension","հիպերտոնիա"],
+["hypo-","under, too little","ցածր, պակաս","hypotension","արյան ցածր ճնշում"],
+["brady-","slow","դանդաղ","bradycardia","սրտի զարկերի դանդաղում"],
+["tachy-","fast","արագ","tachycardia","սրտի զարկերի արագացում"],
+["cardio-","heart","սիրտ","cardiology","սրտաբանություն"],
+["neuro-","nerve","նյարդ","neurology","նյարդաբանություն"],
+["gastro-","stomach","ստամոքս","gastritis","գաստրիտ"],
+["hepato-","liver","լյարդ","hepatitis","հեպատիտ"],
+["nephro-","kidney","երիկամ","nephrologist","նեֆրոլոգ"],
+["pneumo-","lung, air","թոք, օդ","pneumonia","թոքաբորբ"],
+["dermo-","skin","մաշկ","dermatologist","մաշկաբան"],
+["osteo-","bone","ոսկոր","osteoporosis","օստեոպորոզ"],
+["arthro-","joint","հոդ","arthritis","հոդաբորբ"],
+["hemo-","blood","արյուն","hemoglobin","հեմոգլոբին"],
+["cyto-","cell","բջիջ","cytology","բջջաբանություն"],
+["myo-","muscle","մկան","myalgia","մկանային ցավ"],
+["ophthalmo-","eye","աչք","ophthalmologist","աչքաբույժ"],
+["oto-","ear","ականջ","otoscope","օտոսկոպ"],
+["rhino-","nose","քիթ","rhinoplasty","քթի պլաստիկ վիրահատություն"],
+["encephalo-","brain","ուղեղ","encephalitis","ուղեղի բորբոքում"],
+["anti-","against","դեմ","antibiotic","հակաբիոտիկ"],
+["dys-","difficult, abnormal","դժվար, խանգարված","dysphagia","կուլ տալու դժվարություն"],
+["a-, an-","without, absence of","առանց, բացակայություն","anesthesia","անզգայացում"],
+["intra-","inside, within","ներսում","intravenous","ներերակային"],
+["peri-","around","շուրջը","pericardium","սրտապարկ"],
+["sub-","under","տակ","subcutaneous","մաշկատակ"],
+["pre-","before","առաջ","prenatal","նախածննդյան"],
+["post-","after","հետո","postoperative","հետվիրահատական"],
+["neo-","new","նոր","neonatal","նորածնային"]
+];
+
+/* ---- abbreviations: [abbr, full form, Armenian] ---- */
+const AB=[
+["BP","blood pressure","արյան ճնշում"],
+["HR","heart rate","սրտի զարկերի հաճախություն"],
+["ECG / EKG","electrocardiogram","էլեկտրասրտագրություն"],
+["EEG","electroencephalogram","էլեկտրաէնցեֆալոգրաֆիա"],
+["MRI","magnetic resonance imaging","մագնիսառեզոնանսային շերտագրություն"],
+["CT","computed tomography","համակարգչային շերտագրություն"],
+["ICU","intensive care unit","վերակենդանացման բաժանմունք"],
+["ER / ED","emergency room / department","շտապ օգնության բաժանմունք"],
+["OR","operating room","վիրահատարան"],
+["GP","general practitioner","ընդհանուր պրակտիկայի բժիշկ"],
+["ENT","ear, nose and throat","քիթ-կոկորդ-ականջ"],
+["CBC","complete blood count","արյան ընդհանուր քննություն"],
+["WBC","white blood cells","լեյկոցիտներ"],
+["RBC","red blood cells","էրիթրոցիտներ"],
+["Hb","hemoglobin","հեմոգլոբին"],
+["ESR","erythrocyte sedimentation rate","էրիթրոցիտների նստեցման արագություն"],
+["PCR","polymerase chain reaction","պոլիմերազային շղթայական ռեակցիա"],
+["BMI","body mass index","մարմնի զանգվածի ինդեքս"],
+["SpO2","oxygen saturation","թթվածնային հագեցվածություն"],
+["IV","intravenous","ներերակային"],
+["IM","intramuscular","ներմկանային"],
+["CPR","cardiopulmonary resuscitation","սիրտ-թոքային վերակենդանացում"],
+["AED","automated external defibrillator","ավտոմատ արտաքին դեֆիբրիլյատոր"],
+["HIV","human immunodeficiency virus","մարդու իմունային անբավարարության վիրուս"],
+["UTI","urinary tract infection","միզուղիների վարակ"],
+["COPD","chronic obstructive pulmonary disease","թոքերի քրոնիկ օբստրուկտիվ հիվանդություն"],
+["DNA","deoxyribonucleic acid","դեզօքսիռիբոնուկլեինային թթու"],
+["OTC","over the counter (no prescription)","առանց դեղատոմսի"],
+["Rx","prescription","դեղատոմս"],
+["PRN","as needed","անհրաժեշտության դեպքում"]
+];
+
+/* ================= app ================= */
+const CATS=DATA.cats;
+const _seen=new Set();
+const WORDS=DATA.words.map((w,i)=>({en:w[0],hy:w[1],c:w[2],id:i}))
+ .filter(w=>{if(DROP.has(w.en))return false;const k=w.en+"|"+w.hy;if(_seen.has(k))return false;_seen.add(k);return true});
+const BY={},KEYMAP=new Map();
+WORDS.forEach(w=>{BY[w.id]=w;KEYMAP.set(w.en+"|"+w.hy,w.id)});
+const PHF=[];PH.forEach((g,gi)=>g[1].forEach(p=>PHF.push({en:p[0],hy:p[1],g:gi})));
+
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
 const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-let fav=new Set();try{fav=new Set(JSON.parse(ls.get("fav")||"[]"))}catch(e){}
+const rnd=a=>a[Math.random()*a.length|0];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+let fav=new Set();try{fav=new Set(JSON.parse(ls.get("fav")||"[]").filter(id=>BY[id]))}catch(e){}
+const saveFav=()=>ls.set("fav",JSON.stringify([...fav]));
 const PAGE=60;let cat=-1,shown=PAGE,view="dict";
 const hl=(t,q)=>{if(!q)return esc(t);const i=t.toLowerCase().indexOf(q);return i<0?esc(t):esc(t.slice(0,i))+"<mark>"+esc(t.slice(i,i+q.length))+"</mark>"+esc(t.slice(i+q.length))};
 const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2200)};
+
+/* theme */
+const root=document.documentElement,dmq=matchMedia("(prefers-color-scheme: dark)");
+const isDark=()=>root.dataset.theme?root.dataset.theme==="dark":dmq.matches;
+function paintTheme(){$("#theme").textContent=isDark()?"☀️":"🌙";const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=isDark()?"#071518":"#f2fbfa"}
+{const t=ls.get("theme");if(t==="dark"||t==="light")root.dataset.theme=t}
+$("#theme").onclick=()=>{const t=isDark()?"light":"dark";root.dataset.theme=t;ls.set("theme",t);paintTheme();size();RM&&tick()};
+dmq.addEventListener&&dmq.addEventListener("change",()=>{paintTheme();size()});
+paintTheme();
+
+/* speech */
+const SS="speechSynthesis" in window;
+const voices=()=>SS?speechSynthesis.getVoices():[];
 function voiceFor(l){
- const v=speechSynthesis.getVoices().filter(x=>x.lang.replace("_","-").toLowerCase()===l.toLowerCase());
+ const L=l.toLowerCase(),v=voices().filter(x=>{const xl=x.lang.replace("_","-").toLowerCase();return xl===L||(L.startsWith("hy")&&xl.startsWith("hy"))});
  const pref=l==="en-GB"?/daniel|serena|kate|oliver/i:/samantha|ava|allison|nicky/i;
  return v.find(x=>/google/i.test(x.name))||v.find(x=>/premium|enhanced|neural|natural/i.test(x.name))||v.find(x=>pref.test(x.name))||v[0]}
 function say(t,l){
- if(!("speechSynthesis" in window))return toast("Speech is not supported here");
+ if(!SS)return toast("Speech is not supported here");
  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t),v=voiceFor(l);u.lang=l;if(v)u.voice=v;u.rate=.9;speechSynthesis.speak(u)}
-const acts=w=>`<button data-say="${w.id}" data-l="en-US" aria-label="Listen, American accent">🔊 US</button><button data-say="${w.id}" data-l="en-GB" aria-label="Listen, British accent">🔊 UK</button><button class="heart ${fav.has(w.id)?"on":""}" data-fav="${w.id}" aria-label="Save">♥</button>`;
-const card=(w,q,i)=>`<li class="card" style="animation-delay:${Math.min(i%PAGE*25,350)}ms"><div class="en">${hl(w.en,q)}</div><div class="hy">${hl(w.hy,q)}</div><div class="foot"><span class="cat">${esc(CATS[w.c][0])}</span><div class="acts">${acts(w)}</div></div></li>`;
+const checkHy=()=>document.body.classList.toggle("hasHy",voices().some(x=>x.lang.toLowerCase().startsWith("hy")));
+if(SS){checkHy();speechSynthesis.addEventListener&&speechSynthesis.addEventListener("voiceschanged",checkHy)}
+
+/* shared pieces */
+const acts=w=>`<button data-say="${w.id}" data-l="en-US" aria-label="Listen, American accent">🔊 US</button><button data-say="${w.id}" data-l="en-GB" aria-label="Listen, British accent">🔊 UK</button><button class="hyv" data-say="${w.id}" data-l="hy-AM" data-hy="1" aria-label="Listen in Armenian">🔊 ՀՅ</button><button class="heart ${fav.has(w.id)?"on":""}" data-fav="${w.id}" aria-label="Save" aria-pressed="${fav.has(w.id)}">♥</button><button data-link="${w.id}" aria-label="Copy link to this word">🔗</button>`;
+const card=(w,q,i)=>`<li class="card" style="animation-delay:${Math.min(i%PAGE*25,350)}ms"><div class="en">${hl(w.en,q)}</div><div class="hy" lang="hy">${hl(w.hy,q)}</div><div class="foot"><span class="cat">${esc(CATS[w.c][0])}</span><div class="acts">${acts(w)}</div></div></li>`;
+const speakBtns=t=>`<button data-t="${esc(t)}" data-l="en-US" aria-label="Listen, American accent">🔊 US</button><button data-t="${esc(t)}" data-l="en-GB" aria-label="Listen, British accent">🔊 UK</button>`;
+function copy(text){
+ if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text).then(()=>true,()=>false);
+ try{const t=document.createElement("textarea");t.value=text;document.body.appendChild(t);t.select();const ok=document.execCommand("copy");t.remove();return Promise.resolve(ok)}catch(e){return Promise.resolve(false)}}
 document.addEventListener("click",e=>{
  const s=e.target.closest("[data-say]");
- if(s){const w=WORDS[+s.dataset.say];say(w.en,s.dataset.l);return}
+ if(s){const w=BY[+s.dataset.say];say(s.dataset.hy?w.hy:w.en,s.dataset.l);return}
+ const p=e.target.closest("[data-t]");
+ if(p){say(p.dataset.t,p.dataset.l);return}
+ const k=e.target.closest("[data-link]");
+ if(k){const w=BY[+k.dataset.link],u=location.href.split("#")[0]+"#q="+encodeURIComponent(w.en);copy(u).then(ok=>toast(ok?"Link copied":u));return}
  const f=e.target.closest("[data-fav]");
- if(f){const id=+f.dataset.fav;fav.has(id)?fav.delete(id):fav.add(id);ls.set("fav",JSON.stringify([...fav]));
-  $$(`[data-fav="${id}"]`).forEach(b=>b.classList.toggle("on",fav.has(id)));
+ if(f){const id=+f.dataset.fav;fav.has(id)?fav.delete(id):fav.add(id);saveFav();
+  $$(`[data-fav="${id}"]`).forEach(b=>{b.classList.toggle("on",fav.has(id));b.setAttribute("aria-pressed",fav.has(id))});
   f.classList.remove("pop");void f.offsetWidth;f.classList.add("pop");if(view==="saved")setTimeout(renderSaved,350)}});
 /* tilt */
-document.addEventListener("pointermove",e=>{if(e.pointerType==="touch")return;const c=e.target.closest(".card");if(!c)return;const r=c.getBoundingClientRect();c.style.setProperty("--ry",((e.clientX-r.left)/r.width-.5)*10+"deg");c.style.setProperty("--rx",(.5-(e.clientY-r.top)/r.height)*10+"deg")});
+document.addEventListener("pointermove",e=>{if(e.pointerType==="touch")return;const c=e.target.closest&&e.target.closest(".card");if(!c)return;const r=c.getBoundingClientRect();c.style.setProperty("--ry",((e.clientX-r.left)/r.width-.5)*10+"deg");c.style.setProperty("--rx",(.5-(e.clientY-r.top)/r.height)*10+"deg")});
 document.addEventListener("pointerout",e=>{const c=e.target.closest&&e.target.closest(".card");if(c){c.style.setProperty("--rx","0deg");c.style.setProperty("--ry","0deg")}});
-/* dictionary */
+
+/* ---------- dictionary ---------- */
 const norm=s=>s.toLowerCase().trim();
-function score(w,q){let b=0;for(const f of[w.en,w.hy]){const n=norm(f),i=n.indexOf(q);if(i<0)continue;b=Math.max(b,n===q?4:i===0?3:n[i-1]===" "?2:1)}return b}
+function score(w,q,toks){
+ let b=0;
+ for(const f of[w.en,w.hy]){const n=norm(f),i=n.indexOf(q);if(i<0)continue;b=Math.max(b,n===q?4:i===0?3:n[i-1]===" "?2:1)}
+ if(!b&&toks.length>1){const e=norm(w.en),h=norm(w.hy);if(toks.every(t=>e.includes(t)||h.includes(t)))b=1}
+ return b}
 function render(reset){
- if(reset)shown=PAGE;const q=norm($("#q").value);
+ if(reset)shown=PAGE;const q=norm($("#q").value),toks=q.split(/\s+/).filter(Boolean);
  let r=WORDS.filter(w=>cat<0||w.c===cat);
- r=q?r.map(w=>[score(w,q),w]).filter(x=>x[0]).sort((a,b)=>b[0]-a[0]||a[1].en.localeCompare(b[1].en)).map(x=>x[1]):r.slice().sort((a,b)=>a.en.localeCompare(b.en));
+ r=q?r.map(w=>[score(w,q,toks),w]).filter(x=>x[0]).sort((a,b)=>b[0]-a[0]||a[1].en.localeCompare(b[1].en)).map(x=>x[1]):r.slice().sort((a,b)=>a.en.localeCompare(b.en));
  $("#wod").hidden=!!q||cat>=0;$("#count").textContent=(q?"Found: ":"Words: ")+r.length;
  $("#list").innerHTML=r.length?r.slice(0,shown).map((w,i)=>card(w,q,i)).join(""):'<li class="empty">Nothing found. Try another spelling.</li>';
  $("#more").hidden=r.length<=shown;$("#more").textContent="Show more ("+(r.length-shown)+")"}
 const wod=WORDS[Math.floor(Date.now()/864e5)%WORDS.length];
-$("#wod").innerHTML=`<small>✨ WORD OF THE DAY</small><div class="qw">${esc(wod.en)}</div><div class="qw">${esc(wod.hy)}</div><div class="acts">${acts(wod)}</div>`;
+$("#wod").innerHTML=`<small>✨ WORD OF THE DAY</small><div class="qw">${esc(wod.en)}</div><div class="qw" lang="hy">${esc(wod.hy)}</div><div class="acts">${acts(wod)}</div>`;
 $("#chips").innerHTML='<button class="chip on" data-c="-1">All</button>'+CATS.map((c,i)=>`<button class="chip" data-c="${i}">${esc(c[0])}</button>`).join("");
-$("#chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;cat=+b.dataset.c;$$(".chip").forEach(x=>x.classList.toggle("on",x===b));render(true)};
-$("#q").oninput=()=>render(true);$("#more").onclick=()=>{shown+=PAGE;render(false)};render(true);
-/* body map */
+$("#chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;cat=+b.dataset.c;$$("#chips .chip").forEach(x=>x.classList.toggle("on",x===b));render(true)};
+let qt;$("#q").oninput=()=>{clearTimeout(qt);qt=setTimeout(()=>render(true),120)};
+$("#more").onclick=()=>{shown+=PAGE;render(false)};render(true);
+
+/* ---------- body map ---------- */
 const Z=[
 {id:"head",n:"Head & face",d:["M100 6C112 6 121 15 121 29C121 46 113 62 100 62C87 62 79 46 79 29C79 15 88 6 100 6Z"],k:["head","face","eye","ear","nose","mouth","lip","tooth","teeth","tongue","cheek","chin","jaw","forehead","hair","brain","skull","eyebrow","eyelid","throat"]},
 {id:"neck",n:"Neck",d:["M91 63H109L110 75Q112 80 122 83H78Q88 80 90 75Z"],k:["neck","throat","thyroid","spine","vertebra"]},
@@ -184,7 +574,7 @@ const Z=[
 {id:"shins",n:"Lower legs",m:1,d:["M74 345H92C92 366 90 386 88 404H78C74 386 69 366 74 345Z"],k:["shin","calf","leg","ankle","tibia"]},
 {id:"feet",n:"Feet",m:1,d:["M77 407H89C91 416 94 424 93 430H72C71 424 75 416 77 407Z"],k:["foot","feet","toe","heel","ankle","sole"]}];
 const MIR="translate(200 0) scale(-1 1)";
-$("#body").innerHTML=Z.map(z=>`<g class="z" data-z="${z.id}"><title>${z.n}</title>${z.d.map(p=>`<path d="${p}"/>`).join("")}${z.m?z.d.map(p=>`<path d="${p}" transform="${MIR}"/>`).join(""):""}</g>`).join("")+'<g class="det"><circle cx="92" cy="30" r="1.8"/><circle cx="108" cy="30" r="1.8"/><circle cx="100" cy="186" r="2"/><path d="M94 46Q100 49 106 46M82 93Q100 100 118 93" fill="none"/></g><rect class="scan" x="14" y="0" width="172" height="3" rx="2"/>';
+$("#body").innerHTML=Z.map(z=>`<g class="z" data-z="${z.id}" tabindex="0" role="button" aria-label="${z.n}"><title>${z.n}</title>${z.d.map(p=>`<path d="${p}"/>`).join("")}${z.m?z.d.map(p=>`<path d="${p}" transform="${MIR}"/>`).join(""):""}</g>`).join("")+'<g class="det"><circle cx="92" cy="30" r="1.8"/><circle cx="108" cy="30" r="1.8"/><circle cx="100" cy="186" r="2"/><path d="M94 46Q100 49 106 46M82 93Q100 100 118 93" fill="none"/></g><rect class="scan" x="14" y="0" width="172" height="3" rx="2"/>';
 function pick(id){
  const z=Z.find(z=>z.id===id);$$(".z").forEach(g=>g.classList.toggle("sel",g.dataset.z===id));
  const re=new RegExp("\\b("+z.k.join("|")+")s?\\b","i");
@@ -192,39 +582,195 @@ function pick(id){
  $("#bodyhd").textContent=z.n+" · "+r.length+" words";
  $("#bodylist").innerHTML=r.map((w,i)=>card(w,"",i)).join("")||'<li class="empty">No words here yet.</li>'}
 $("#body").onclick=e=>{const g=e.target.closest(".z");g&&pick(g.dataset.z)};
-/* learn */
+$("#body").onkeydown=e=>{if(e.key!=="Enter"&&e.key!==" ")return;const g=e.target.closest(".z");if(g){e.preventDefault();pick(g.dataset.z)}};
+
+/* ---------- learn ---------- */
 const fx=$("#fx"),cx=fx.getContext("2d");let P=[],run1=0;
 function boom(el){if(RM)return;const r=el.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
  for(let i=0;i<45;i++)P.push({x,y,vx:(Math.random()-.5)*11,vy:-Math.random()*10-2,s:4+Math.random()*5,c:`hsl(${Math.random()*360},85%,60%)`,l:75});
  if(run1)return;run1=1;(function f(){cx.clearRect(0,0,fx.width,fx.height);P=P.filter(p=>p.l-->0);
   P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.35;cx.fillStyle=p.c;cx.globalAlpha=Math.min(1,p.l/30);cx.fillRect(p.x,p.y,p.s,p.s)});
-  P.length?requestAnimationFrame(f):run1=0})()}
-let mode="quiz",dir=0,streak=0,best=+ls.get("best")||0;
-const rnd=a=>a[Math.random()*a.length|0];
+  P.length?requestAnimationFrame(f):(run1=0,cx.clearRect(0,0,fx.width,fx.height))})()}
+
+let mode="quiz",dir=0,lcat=-1,streak=0,best=+ls.get("best")||0,lastId=-1,tok=0;
+let srs={},st={day:"",n:0,streak:0,last:""};
+try{srs=JSON.parse(ls.get("srs")||"{}")}catch(e){}
+try{Object.assign(st,JSON.parse(ls.get("st")||"{}"))}catch(e){}
+const GOAL=20,INT=[0,1,2,4,8,16];            /* Leitner boxes: days until the word is due again */
+const dayStr=d=>{d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const yest=()=>dayStr(new Date(Date.now()-864e5));
+const curStreak=()=>st.last===dayStr()||st.last===yest()?st.streak:0;
+const isHard=w=>{const s=srs[w.id];return !!s&&s.w>=2&&s.b<=2};
+
+function rec(id,ok){
+ const s=srs[id]||{b:0,w:0};
+ if(ok)s.b=Math.min(s.b+1,5);else{s.b=0;s.w=(s.w||0)+1}
+ s.d=Date.now()+INT[s.b]*864e5;srs[id]=s;ls.set("srs",JSON.stringify(srs));
+ const t=dayStr();
+ if(st.day!==t){st.day=t;st.n=0}
+ st.n++;
+ if(st.last!==t){st.streak=st.last===yest()?st.streak+1:1;st.last=t}
+ ls.set("st",JSON.stringify(st));
+ if(ok&&st.n===GOAL)toast("🎯 Daily goal reached!")}
+function learnPool(){return lcat==="hard"?WORDS.filter(isHard):lcat===-1?WORDS:WORDS.filter(w=>w.c===lcat)}
+function pickWord(){
+ const pool=learnPool();if(!pool.length)return null;
+ const now=Date.now(),other=w=>w.id!==lastId;
+ const due=pool.filter(w=>srs[w.id]&&srs[w.id].d<=now&&other(w)),fresh=pool.filter(w=>!srs[w.id]&&other(w));
+ let list;
+ if(due.length&&(!fresh.length||Math.random()<.6))list=due;
+ else if(fresh.length)list=fresh;
+ else{const m=Math.min(...pool.map(w=>srs[w.id].b));list=pool.filter(w=>srs[w.id].b===m&&other(w))}
+ return rnd(list.length?list:pool)}
+function stats(){
+ const pool=learnPool(),now=Date.now(),today=st.day===dayStr()?st.n:0;
+ const learned=pool.filter(w=>srs[w.id]&&srs[w.id].b>=3).length,due=pool.filter(w=>srs[w.id]&&srs[w.id].d<=now).length;
+ $("#lstats").innerHTML=`<div class="r"><span>Today <b>${today}/${GOAL}</b></span><span>Day streak <b>${curStreak()}</b></span><span>Learned <b>${learned}/${pool.length}</b></span><span>Due <b>${due}</b></span></div><div class="bar"><i style="width:${Math.min(100,today/GOAL*100)}%"></i></div>`;
+ const o=$('#lcat option[value="hard"]');if(o)o.textContent="Hard words ("+WORDS.filter(isHard).length+")"}
+function fillCats(){
+ const sel=$("#lcat");
+ sel.innerHTML='<option value="-1">All categories</option>'+CATS.map((c,i)=>`<option value="${i}">${esc(c[0])}</option>`).join("")+'<option value="hard">Hard words</option>';
+ sel.value=String(lcat)}
+$("#lcat").onchange=e=>{const v=e.target.value;lcat=v==="hard"?v:+v;lastId=-1;learn()};
+
+/* distractors never repeat the correct text or a synonym with the same Armenian */
+function options(w,field){
+ const o=[w],seen=new Set([w[field]]);
+ const add=list=>{list=shuffle(list.slice());for(const x of list){if(o.length>=4)break;if(seen.has(x[field]))continue;seen.add(x[field]);o.push(x)}};
+ const ok=x=>x.id!==w.id&&x.hy!==w.hy&&x.en!==w.en;
+ add(WORDS.filter(x=>x.c===w.c&&ok(x)));
+ if(o.length<4)add(WORDS.filter(ok));
+ return shuffle(o)}
+const empty=()=>{$("#learn").innerHTML='<div class="qcard"><small>NOTHING HERE YET</small><div class="qw" style="font-size:20px">No hard words yet — keep practising and the tricky ones will show up here.</div></div>'};
+function pickOpt(w,b,my){
+ const ok=+b.dataset.o===w.id;
+ $$(".opt").forEach(x=>{x.disabled=true;if(+x.dataset.o===w.id)x.classList.add("good")});
+ if(ok){streak++;if(streak>best){best=streak;ls.set("best",best)}boom(b)}else{b.classList.add("bad");streak=0}
+ const h=$("#lh");if(h)h.textContent=w.en;
+ rec(w.id,ok);stats();
+ setTimeout(()=>{if(my===tok&&view==="learn")learn()},ok?900:1700)}
+function optsHtml(o,k,hy){return `<div class="opts">${o.map(x=>`<button class="opt" data-o="${x.id}" ${hy?'lang="hy"':''}>${esc(x[k])}</button>`).join("")}</div>`}
+
 function quiz(){
- const w=rnd(WORDS),k=dir?"en":"hy",q=dir?"hy":"en",pool=WORDS.filter(x=>x.c===w.c&&x.id!==w.id),o=[w];
- while(o.length<4&&pool.length)o.push(pool.splice(Math.random()*pool.length|0,1)[0]);
- o.sort(()=>Math.random()-.5);
- $("#learn").innerHTML=`<div class="stats"><div>🔥 Streak: ${streak}</div><span>Best: ${best}</span></div><div class="qcard"><small>${dir?"ARMENIAN → ENGLISH":"ENGLISH → ARMENIAN"}</small><div class="qw">${esc(w[q])}</div></div><div class="opts">${o.map(x=>`<button class="opt" data-o="${x.id}">${esc(x[k])}</button>`).join("")}</div>`;
- $$(".opt").forEach(b=>b.onclick=()=>{
-  const ok=+b.dataset.o===w.id;$$(".opt").forEach(x=>{x.disabled=true;if(+x.dataset.o===w.id)x.classList.add("good")});
-  if(ok){streak++;if(streak>best){best=streak;ls.set("best",best)}boom(b)}else{b.classList.add("bad");streak=0}
-  setTimeout(()=>mode==="quiz"&&view==="learn"&&quiz(),ok?900:1700)})}
-function flash(){
- const w=rnd(WORDS);
- $("#learn").innerHTML=`<div class="flip" id="fl"><div class="face f1"><div class="qw">${esc(dir?w.hy:w.en)}</div><small>Tap to flip</small></div><div class="face f2"><div class="qw">${esc(dir?w.en:w.hy)}</div></div></div><div class="cen"><div class="acts">${acts(w)}</div></div><button class="more" id="nx">Next word ➜</button>`;
- $("#fl").onclick=()=>$("#fl").classList.toggle("on");$("#nx").onclick=flash}
-const learn=()=>mode==="quiz"?quiz():flash();
+ const w=pickWord();if(!w)return empty();lastId=w.id;
+ const k=dir?"en":"hy",q=dir?"hy":"en",o=options(w,k),my=++tok;
+ $("#learn").innerHTML=`<div class="stats"><div>🔥 In a row: ${streak}</div><span>Best: ${best}</span></div><div class="qcard"><small>${dir?"ARMENIAN → ENGLISH":"ENGLISH → ARMENIAN"}</small><div class="qw" ${dir?'lang="hy"':''}>${esc(w[q])}</div></div>${optsHtml(o,k,!dir)}`;
+ $$(".opt").forEach(b=>b.onclick=()=>pickOpt(w,b,my))}
+function listen(){
+ const w=pickWord();if(!w)return empty();lastId=w.id;
+ const o=options(w,"hy"),my=++tok;
+ $("#learn").innerHTML=`<div class="stats"><div>🔥 In a row: ${streak}</div><span>Best: ${best}</span></div><div class="qcard"><small>LISTEN, THEN CHOOSE THE ARMENIAN</small><button class="play" id="pl" type="button" aria-label="Play the word">🔊 Play</button><div class="fb" id="lh" style="color:#fff"></div></div>${optsHtml(o,"hy",true)}`;
+ const play=()=>say(w.en,"en-US");$("#pl").onclick=play;setTimeout(()=>my===tok&&play(),250);
+ $$(".opt").forEach(b=>b.onclick=()=>pickOpt(w,b,my))}
+function cards(){
+ const w=pickWord();if(!w)return empty();lastId=w.id;++tok;
+ $("#learn").innerHTML=`<div class="flip" id="fl" tabindex="0" role="button" aria-label="Flip card"><div class="face f1"><div class="qw" ${dir?'lang="hy"':''}>${esc(dir?w.hy:w.en)}</div><small>Tap to flip</small></div><div class="face f2"><div class="qw" ${dir?'':'lang="hy"'}>${esc(dir?w.en:w.hy)}</div></div></div><div class="cen"><div class="acts">${acts(w)}</div></div><div class="two"><button class="opt" id="no" type="button">✗ Again</button><button class="opt" id="yes" type="button">✓ Got it</button></div>`;
+ const fl=$("#fl"),flip=()=>fl.classList.toggle("on");fl.onclick=flip;fl.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip()}};
+ $("#no").onclick=()=>{rec(w.id,false);stats();learn()};
+ $("#yes").onclick=()=>{rec(w.id,true);stats();learn()}}
+const nz=s=>s.toLowerCase().replace(/\(.*?\)/g," ").replace(/[^a-z0-9' \-]/g,"").replace(/\s+/g," ").trim();
+function typing(){
+ const w=pickWord();if(!w)return empty();lastId=w.id;
+ const my=++tok,okSet=new Set(WORDS.filter(x=>x.hy===w.hy).map(x=>nz(x.en)));
+ $("#learn").innerHTML=`<div class="stats"><div>🔥 In a row: ${streak}</div><span>Best: ${best}</span></div><div class="qcard"><small>TYPE THE ENGLISH WORD</small><div class="qw" lang="hy">${esc(w.hy)}</div></div><form id="tf" autocomplete="off"><input class="typein" id="ti" aria-label="English word" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="English…"><div class="two"><button type="button" class="opt" id="hint">💡 Hint</button><button class="opt" id="chk" type="submit">Check</button></div></form><div class="fb" id="fb"></div>`;
+ const ti=$("#ti"),fb=$("#fb");let done=false;
+ setTimeout(()=>{try{ti.focus({preventScroll:true})}catch(e){}},50);
+ $("#hint").onclick=()=>{fb.textContent=w.en[0]+w.en.slice(1).replace(/[A-Za-z0-9]/g,"•");ti.focus()};
+ $("#tf").onsubmit=e=>{
+  e.preventDefault();
+  if(done){learn();return}
+  const v=nz(ti.value);if(!v)return;
+  const good=okSet.has(v);done=true;ti.disabled=true;ti.classList.add(good?"good":"bad");
+  fb.innerHTML=good?"✓ "+esc(w.en):"Answer: <b>"+esc(w.en)+"</b>";
+  if(good){streak++;if(streak>best){best=streak;ls.set("best",best)}boom(ti)}else streak=0;
+  rec(w.id,good);stats();$("#chk").textContent="Next ➜";$("#chk").focus();
+  if(good)setTimeout(()=>{if(my===tok&&view==="learn"&&done)learn()},1100)}}
+function learn(){stats();({quiz,cards,listen,type:typing})[mode]()}
 $("#lmode").onclick=e=>{const b=e.target.closest("button");if(!b)return;
  if(b.id==="dirb"){dir=1-dir;b.textContent=dir?"ՀՅ → EN":"EN → ՀՅ";streak=0}
- else{mode=b.dataset.m;$$("#lmode [data-m]").forEach(x=>x.classList.toggle("on",x===b))}
+ else{mode=b.dataset.m;streak=0;$$("#lmode [data-m]").forEach(x=>x.classList.toggle("on",x===b))}
+ $("#dirb").hidden=mode==="listen"||mode==="type";
  learn()};
-/* saved + tabs */
+
+/* ---------- phrases / word parts / abbreviations ---------- */
+let rmode="ph",rsel=-1;
+const RPH={ph:"Search phrases…",wp:"Search: -itis, heart, կոկորդ…",ab:"Search: ECG, BP…"};
+function rChips(){
+ const items=rmode==="ph"?["All",...PH.map(g=>g[0])]:rmode==="wp"?["All","Suffixes","Prefixes and roots"]:[];
+ $("#rchips").innerHTML=items.map((t,i)=>`<button class="chip ${i===rsel+1?"on":""}" data-g="${i-1}">${esc(t)}</button>`).join("");
+ $("#rchips").hidden=!items.length}
+function rRender(){
+ const q=norm($("#rq").value);let n=0,html="";
+ const has=(...f)=>!q||f.some(x=>norm(x).includes(q));
+ if(rmode==="ph"){
+  const r=PHF.map((p,i)=>({...p,i})).filter(p=>(rsel<0||p.g===rsel)&&has(p.en,p.hy));n=r.length;
+  html=r.map((p,i)=>`<li class="card" style="animation-delay:${Math.min(i*20,300)}ms"><div class="en">${hl(p.en,q)}</div><div class="hy" lang="hy">${hl(p.hy,q)}</div><div class="foot"><span class="cat">${esc(PH[p.g][0])}</span><div class="acts">${speakBtns(p.en)}<button class="hyv" data-t="${esc(p.hy)}" data-l="hy-AM" aria-label="Listen in Armenian">🔊 ՀՅ</button></div></div></li>`).join("");
+  const em=PH.findIndex(g=>g[0]==="Emergency");
+  $("#rnote").hidden=!(rsel<0||rsel===em);$("#rnote").textContent=PH_NOTE;
+ }else if(rmode==="wp"){
+  const r=WP.filter(p=>(rsel<0||(rsel===0)===p[0].startsWith("-"))&&has(p[0],p[1],p[2],p[3],p[4]));n=r.length;
+  html=r.map((p,i)=>`<li class="card" style="animation-delay:${Math.min(i*20,300)}ms"><div class="abbr">${hl(p[0],q)}</div><div class="en">${hl(p[1],q)}</div><div class="hy" lang="hy">${hl(p[2],q)}</div><div class="ex">e.g. <b>${hl(p[3],q)}</b> — <span lang="hy">${hl(p[4],q)}</span></div><div class="foot"><span class="cat"></span><div class="acts">${speakBtns(p[3])}</div></div></li>`).join("");
+  $("#rnote").hidden=true;
+ }else{
+  const r=AB.filter(p=>has(p[0],p[1],p[2]));n=r.length;
+  html=r.map((p,i)=>`<li class="card" style="animation-delay:${Math.min(i*20,300)}ms"><div class="abbr">${hl(p[0],q)}</div><div class="en">${hl(p[1],q)}</div><div class="hy" lang="hy">${hl(p[2],q)}</div><div class="foot"><span class="cat"></span><div class="acts">${speakBtns(p[1])}</div></div></li>`).join("");
+  $("#rnote").hidden=true;
+ }
+ $("#rcount").textContent=(rmode==="ph"?"Phrases: ":rmode==="wp"?"Word parts: ":"Abbreviations: ")+n;
+ $("#rlist").classList.toggle("wide",rmode==="ph");
+ $("#rlist").innerHTML=html||'<li class="empty">Nothing found.</li>'}
+function rInit(){$("#rq").placeholder=RPH[rmode];rChips();rRender()}
+$("#rmode").onclick=e=>{const b=e.target.closest("button");if(!b)return;rmode=b.dataset.r;rsel=-1;$("#rq").value="";$$("#rmode button").forEach(x=>x.classList.toggle("on",x===b));rInit()};
+$("#rchips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;rsel=+b.dataset.g;rChips();rRender()};
+let rt;$("#rq").oninput=()=>{clearTimeout(rt);rt=setTimeout(rRender,120)};
+
+/* ---------- saved, export / import ---------- */
 function renderSaved(){const r=WORDS.filter(w=>fav.has(w.id));$("#savedlist").innerHTML=r.length?r.map((w,i)=>card(w,"",i)).join(""):'<li class="empty">Tap ♥ on any word to save it here.</li>'}
-function go(v){view=v;$$(".view").forEach(x=>x.hidden=x.id!=="v-"+v);$$("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
- if(v==="saved")renderSaved();if(v==="learn")learn();if(v==="body"&&!$(".z.sel"))pick("head");scrollTo({top:0})}
+function download(name,text,type){
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type+";charset=utf-8"}));a.download=name;document.body.appendChild(a);a.click();
+ setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800)}
+const ankiText=list=>"#separator:tab\n#html:false\n"+list.map(w=>w.en+"\t"+w.hy).join("\n")+"\n";
+$("#exAnki").onclick=()=>{const r=WORDS.filter(w=>fav.has(w.id));if(!r.length)return toast("Nothing saved yet");download("medical-dictionary-saved.txt",ankiText(r),"text/plain");toast(r.length+" words exported")};
+$("#exAll").onclick=()=>{download("medical-dictionary-all.txt",ankiText(WORDS),"text/plain");toast(WORDS.length+" words exported")};
+$("#exJson").onclick=()=>{
+ const key=id=>BY[id].en+"|"+BY[id].hy,s={};
+ Object.keys(srs).forEach(id=>{if(BY[id])s[key(id)]=srs[id]});
+ download("medical-dictionary-backup.json",JSON.stringify({v:1,saved:[...fav].map(key),srs:s,best,st},null,1),"application/json");toast("Backup saved")};
+$("#imJson").onclick=()=>$("#imFile").click();
+$("#imFile").onchange=e=>{
+ const f=e.target.files[0];e.target.value="";if(!f)return;
+ f.text().then(t=>{
+  const d=JSON.parse(t);if(!d||d.v!==1)throw 0;let a=0,b=0;
+  (d.saved||[]).forEach(k=>{const id=KEYMAP.get(k);if(id!==undefined&&!fav.has(id)){fav.add(id);a++}});
+  Object.keys(d.srs||{}).forEach(k=>{const id=KEYMAP.get(k),s=d.srs[k];if(id===undefined||!s)return;const c=srs[id];if(!c||(s.b||0)>c.b){srs[id]={b:s.b|0,w:s.w|0,d:+s.d||0};b++}});
+  if(d.best>best){best=d.best;ls.set("best",best)}
+  saveFav();ls.set("srs",JSON.stringify(srs));renderSaved();toast("Restored: "+a+" saved, "+b+" progress entries")
+ }).catch(()=>toast("That file is not a valid backup"))};
+
+/* ---------- tabs ---------- */
+function go(v){
+ view=v;$$(".view").forEach(x=>x.hidden=x.id!=="v-"+v);
+ $$("#tabs button").forEach(b=>{const on=b.dataset.v===v;b.classList.toggle("on",on);b.setAttribute("aria-selected",on)});
+ if(v!=="learn"){tok++;SS&&speechSynthesis.cancel()}
+ if(v==="saved")renderSaved();
+ if(v==="learn"){fillCats();learn()}
+ if(v==="ref")rInit();
+ if(v==="body"&&!$(".z.sel"))pick("head");
+ scrollTo({top:0})}
 $("#tabs").onclick=e=>{const b=e.target.closest("button");b&&go(b.dataset.v)};
-/* background: cells + DNA helix */
+$("#tabs").onkeydown=e=>{
+ if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft")return;
+ const bs=$$("#tabs button"),i=bs.findIndex(x=>x.classList.contains("on")),n=bs[(i+(e.key==="ArrowRight"?1:bs.length-1))%bs.length];n.focus();go(n.dataset.v)};
+$("#dirb").hidden=false;
+
+/* deep link: #q=word */
+function fromHash(){
+ const m=location.hash.match(/^#q=(.*)$/);if(!m)return;
+ try{$("#q").value=decodeURIComponent(m[1])}catch(e){return}
+ cat=-1;$$("#chips .chip").forEach((x,i)=>x.classList.toggle("on",i===0));go("dict");render(true)}
+addEventListener("hashchange",fromHash);
+
+/* ---------- background: cells + DNA helix ---------- */
 const bg=$("#bg"),bx=bg.getContext("2d");let W,H,col="#0d9488",t=0,fr=0;
 const cells=Array.from({length:16},()=>({x:Math.random(),y:Math.random(),r:8+Math.random()*24,v:.0024*(.5+Math.random())}));
 function size(){W=bg.width=fx.width=innerWidth;H=bg.height=fx.height=innerHeight;col=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||col}
@@ -238,12 +784,17 @@ function tick(){
   if(y%36===0){bx.lineWidth=1;bx.beginPath();bx.moveTo(a,y);bx.lineTo(b,y);bx.stroke()}}
  t+=.02;if(!RM)requestAnimationFrame(tick)}
 size();tick();addEventListener("resize",()=>{size();RM&&tick()});
-/* intro */
+
+/* ---------- intro ---------- */
 const intro=$("#intro");let done=false;
 function finish(){if(done)return;done=true;intro.classList.add("out");$("#main").classList.add("show");document.body.classList.remove("lock");setTimeout(()=>intro.remove(),1100)}
 intro.onclick=finish;setTimeout(finish,3800);
-(function(){const T=WORDS.length,t0=performance.now(),el=$("#n");
+(function(){const T=WORDS.length+PHF.length+WP.length+AB.length,t0=performance.now(),el=$("#n");
  (function s(now){const p=Math.min((now-t0-600)/1700,1);el.textContent=p<1?Math.round(T*(p<0?0:1-Math.pow(1-p,3))):T;if(p<1&&!done)requestAnimationFrame(s);else el.textContent=T})(t0)})();
+
+/* ---------- offline ---------- */
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+fromHash();
 </script>
 </body>
 </html>
